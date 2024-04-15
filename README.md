@@ -9,4 +9,5 @@
 ```
 git clone https://github.com/JuuJ12/Heart-Attack
 
+Após isso execute o arquivo main, vá ao terminal e digite o seguinte comando: streamlit run main.py
 ```
