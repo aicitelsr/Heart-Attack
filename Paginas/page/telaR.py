@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 # função para Carregar o arquivo CSV em um dataframe pandas
 def lerDataset():
-    dataset = pd.read_csv("heart_disease.csv")
+    dataset = pd.read_csv("data/heart_disease.csv")
     return dataset
 
 # função para Contar quantidade de linhas x colunas do dataset
@@ -18,6 +18,22 @@ def ColunasDataset(dataset):
 # função para conta quantidade de vezes que um elemento aparece na coluna
 def RepetDataset(dataset, coluna):
     return dataset[coluna].value_counts()
+
+# ler conteudo de uma coluna
+def ConteudoColuna(dataset,coluna):
+    # Obter os valores da coluna como uma lista
+    valores = dataset[coluna].tolist()
+    
+    # Limitar a exibição a até 6 valores
+    valores_limitados = valores[:10]
+
+    # Criar uma lista de strings formatadas para cada par chave-valor
+    formatado = [f"{index}: {valor}\n" for index, valor in enumerate(valores_limitados)]
+    
+    # Juntar as strings formatadas em uma única string separada por quebras de linha
+    return '\n'.join(formatado)
+
+
 
 # função para ler quantidade de entradas unicas numericas
 def entradaNumber(datset):
@@ -39,6 +55,12 @@ def entradaNumber(datset):
     # Exibe o gráfico
     plt.show()
 
+# Função para exibir o dicionario de texto
+def ler_arquivo_txt(caminho_arquivo="data/dicionario.txt"):
+    with open(caminho_arquivo, 'r') as arquivo:
+        conteudo = arquivo.read()
+    return conteudo
+
 # Interface stremalit
 def main():
     # Titulo da tela
@@ -57,16 +79,25 @@ def main():
         st.write(ColunasDataset(dataset))
 
         # selecionar coluna para conta
-        coluna_selecioanda = st.selectbox('Escolha uma coluna', dataset.columns)
+        coluna_selecionada = st.selectbox('Escolha uma coluna', dataset.columns)
 
         # contar repetição na coluna selecionada
-        st.write(f'a frequencia da coluna selecionada é {RepetDataset(dataset,coluna_selecioanda)}')
+        st.write(f'a frequencia da coluna selecionada é {RepetDataset(dataset,coluna_selecionada)}')
+        # ler conteudo da coluna
+        st.write(f'conteudo da coluna selecionada: \n{ConteudoColuna(dataset,coluna_selecionada)}')
 
+        # dicionario de termos tecnicos do dataset
+        st.title(f'Dicionario informativo')
 
-        # numero de entradas unicas para cada caracteristica numerica
+        #chamar def que ler o dicionario
+        dicionario = ler_arquivo_txt()
+        st.write(dicionario)
+
+        # GRAFICO
+        # numero de entradas unicas para cada caracteristica numerica 
         entradaNumber(dataset)
 
 
 # executar def main
-if __name__ == '__main__':
+if __name__== '__main__':
     main()
