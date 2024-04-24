@@ -3,6 +3,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 
 
+
 # Função para exibir o boxplot da coluna selecionada
 def exibir_boxplot(dataset, coluna_selecionada):
     # Verificar se a coluna selecionada existe no dataset
@@ -85,7 +86,7 @@ def ler_arquivo_txt(caminho_arquivo="data/dicionario.txt"):
     return conteudo
 
 # Interface stremalit
-def main():
+def telaR():
     # Titulo da tela
     st.title(' Análise exploratória ')
 
@@ -152,4 +153,4 @@ def main():
 
 # executar def main
 if __name__== '__main__':
-    main()
+    telaR()
