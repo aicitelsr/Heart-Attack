@@ -34,6 +34,8 @@ DiffWalk: Indica se a pessoa tem dificuldade ao caminhar ou subir escadas.
 
 Sex: Indica o sexo da pessoa, onde 0 é feminino e 1 é masculino.
 
+Income: Indica o rendimento total do agregado familiar, variando entre 1 (pelo menos $10.000) e 6 ($75.000+)
+
 Age : Indica a classe etária da pessoa, onde 1 é de 18 anos a 24 anos até 13, que é de 80 anos ou mais, cada intervalo entre tem um incremento de 5 anos.
 
 Education : Indica o maior ano de escolaridade concluída, sendo 0 nunca frequentado ou jardim de infância apenas e 6 sendo, tendo frequentado 4 anos de faculdade ou mais.
