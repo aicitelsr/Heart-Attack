@@ -18,15 +18,15 @@ Fruits: Indica se a pessoa consome 1 ou mais frutas(s) diariamente.
 
 Veggies: Indica se a pessoa consome 1 ou mais vegetal(s) diariamente.
 
-HvyAlcoholConsump : Indica se a pessoa tem mais de 14 bebidas por semana.
+HvyAlcoholConsump : Indica se a pessoa toma mais de 14 bebidas alcoólicas por semana.
 
 AnyHealthcare: Indica se a pessoa tem alguma forma de seguro de saúde.
 
-NoDocbcCost : Indica se a pessoa queria visitar um médico nos últimos 1 ano, mas poderia.
+NoDocbcCost : Indica se a pessoa queria visitar um médico nos últimos 1 ano, mas não pode por causa do custo.
 
 GenHlth : Indica a resposta das pessoas a quão bem está sua saúde geral, variando de 1 (excelente) a 5 (pobre).
 
-Menthlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde mental.
+MentHlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde mental.
 
 PhysHlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde física.
 
