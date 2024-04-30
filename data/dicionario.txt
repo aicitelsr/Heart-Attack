@@ -1,20 +1,41 @@
 HighBP : Indica se a pessoa foi informada por um profissional de saúde que ela tem Pressão Arterial Alta.
+
 HighChol : Indica se a pessoa foi informada por um profissional de saúde que ela tem Colesterol Alto no Sangue.
+
 CholCheck : Cholesterol Check, se a pessoa tiver seus níveis de colesterol verificados nos últimos 5 anos.
+
 BMI : Índice de Massa Corporal, calculado dividindo o peso das pessoas (em quilograma) pelo quadrado de sua altura (em metros).
+
 Smoker: Indica se a pessoa fumou pelo menos 100 cigarros.
+
 Stroke: Indica se a pessoa tem um histórico de acidente vascular cerebral.
+
 Diabetes: Indica se a pessoa tem um histórico de diabetes, ou atualmente em pré-diabetes, ou sofre de qualquer tipo de diabetes.
+
 PhysActivity: Indica se a pessoa tem alguma forma de atividade física em sua rotina diária.
+
 Fruits: Indica se a pessoa consome 1 ou mais frutas(s) diariamente.
+
 Veggies: Indica se a pessoa consome 1 ou mais vegetal(s) diariamente.
-HvyAlcoholConsump : Indica se a pessoa tem mais de 14 bebidas por semana.
+
+HvyAlcoholConsump : Indica se a pessoa toma mais de 14 bebidas alcoólicas por semana.
+
 AnyHealthcare: Indica se a pessoa tem alguma forma de seguro de saúde.
-NoDocbcCost : Indica se a pessoa queria visitar um médico nos últimos 1 ano, mas poderia.
+
+NoDocbcCost : Indica se a pessoa queria visitar um médico nos últimos 1 ano, mas não pode por causa do custo.
+
 GenHlth : Indica a resposta das pessoas a quão bem está sua saúde geral, variando de 1 (excelente) a 5 (pobre).
-Menthlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde mental.
+
+MentHlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde mental.
+
 PhysHlth : Indica o número de dias, nos últimos 30 dias que a pessoa teve má saúde física.
+
 DiffWalk: Indica se a pessoa tem dificuldade ao caminhar ou subir escadas.
+
 Sex: Indica o sexo da pessoa, onde 0 é feminino e 1 é masculino.
+
+Income: Indica o rendimento total do agregado familiar, variando entre 1 (pelo menos $10.000) e 6 ($75.000+)
+
 Age : Indica a classe etária da pessoa, onde 1 é de 18 anos a 24 anos até 13, que é de 80 anos ou mais, cada intervalo entre tem um incremento de 5 anos.
+
 Education : Indica o maior ano de escolaridade concluída, sendo 0 nunca frequentado ou jardim de infância apenas e 6 sendo, tendo frequentado 4 anos de faculdade ou mais.
