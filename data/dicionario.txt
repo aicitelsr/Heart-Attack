@@ -1,3 +1,5 @@
+HeartDiseaseorAttack: Indica se a pessoa teve problema cardiácos.
+
 HighBP : Indica se a pessoa foi informada por um profissional de saúde que ela tem Pressão Arterial Alta.
 
 HighChol : Indica se a pessoa foi informada por um profissional de saúde que ela tem Colesterol Alto no Sangue.
