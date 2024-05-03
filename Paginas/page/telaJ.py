@@ -26,12 +26,15 @@ def telaJ():
     nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
                        'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
     colunas= st.multiselect('Colunas',options=nomes_colunas)
-    if len(colunas) > 4:
-        st.error('Por Favor Insira ')
-    else:
-        if len(colunas) >=2:
+
+    if len(colunas) >=2:
             grafico= px.parallel_categories(dfp[colunas])
             button_input= st.button('Gerar Gráfico')
+            pronto = st.success('Gráfico Pronto Para Ser Gerado', icon='✅')
             if button_input:
+                    with st.empty():
+                        pronto.empty()
                     st.plotly_chart(grafico)
+    if len(colunas) <=1:
+        st.error('Deve Haver no Mínimo Duas Colunas', icon='🚨')
     
