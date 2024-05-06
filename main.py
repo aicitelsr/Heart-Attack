@@ -3,4 +3,4 @@ import Pages.telaL as pgl
 import Pages.telaM as pgm
 import Pages.telaR as pgr
 import streamlit as st
-st.title('Tela Inicial')
+st.set_page_config(page_title='Tela Inicial', layout="wide")
