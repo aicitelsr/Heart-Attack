@@ -48,5 +48,6 @@ def telaR():
         fig = px.histogram(df_plot, x='Interseção', title='Contagem da Interseção entre ' + colunaA + ' e ' + colunaB)
         st.plotly_chart(fig)
 
-if __name__ == '__main__':
-    telaR()
+
+telaR()
+

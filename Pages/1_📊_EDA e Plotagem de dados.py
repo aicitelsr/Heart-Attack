@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
+
 df = pd.read_csv('data/heart_disease.csv')
 dfp = pd.read_parquet('data/heart_disease.parquet')
 
