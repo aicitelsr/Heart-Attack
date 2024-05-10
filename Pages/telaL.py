@@ -13,6 +13,7 @@ def idade(data_heart):
     data_heart['Age'] = pd.cut(
         data_heart['Age'], bins=bins, labels=labels, right=False)
 
+# antigo código usando
 # def idade():
 #     faixa_idade = {
 #         1: '18-24',
@@ -37,6 +38,8 @@ def idade(data_heart):
 
 
 def telaL():
+    st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
+
     idade(data_heart)
     data_heart['HeartDiseaseorAttack'] = data_heart['HeartDiseaseorAttack'].astype(
         'category')
@@ -49,12 +52,57 @@ def telaL():
 
     fig = px.bar(agrupando_idade, x="Idade", y='Total',
                  color="DoencaCardiaca", title="Gráfico Idade x Doença Cardíaca",
-                 labels={'value': "Total", "variable": "Possui D.C."},
+                 labels={'value': "Total"},
                  color_discrete_map={0: "#99ccff", 1: "red"})
     st.plotly_chart(fig)
 
 
+def binario_para_sim_nao(df):
+    # Identificar colunas binárias
+    colunas_binarias = data_heart.columns[(
+        data_heart.eq(0) | data_heart.eq(1)).all()]
 
+    # Crie um dicionário de mapeamento para converter valores binários em 'Sim' e 'Não'
+    mapeamento = {0: 'Não', 1: 'Sim'}
+
+    # Use applymap para aplicar o mapeamento apenas às colunas binárias identificadas
+    data_heart[colunas_binarias] = data_heart[colunas_binarias].map(
+        lambda x: mapeamento.get(x, x))
+
+    return df
+
+
+def binario_para_genero(df):
+
+    mapeamento = {0: 'Feminino', 1: 'Masculino'}
+
+    df['Sex'] = df['Sex'].map(mapeamento)
+
+    return df
+
+
+def telaL2():
+    st.markdown('<h3>Histograma</h3>', unsafe_allow_html=True)
+    binario_para_genero(data_heart)
+    binario_para_sim_nao(data_heart)
+
+    colunas_binarias = ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'PhysActivity',
+                        'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk']
+    coluna = st.selectbox("Selecione uma coluna binária para visualização:",
+                          options=colunas_binarias)
+
+    if coluna:
+        agrupando_por_sexo = data_heart.groupby(
+            'Sex')[coluna].value_counts().to_frame().reset_index()
+        agrupando_por_sexo.columns = ['Sexo', coluna, 'Total']
+
+        fig = px.histogram(agrupando_por_sexo, x="Sexo", y="Total",
+                           color="Sexo", pattern_shape=coluna, title=f"Gráfico Sexo x {coluna}",
+                           labels={'value:': "Total"})
+        st.plotly_chart(fig)
+    else:
+        st.warning("Por favor, selecione uma coluna binária para visualização.")
 
 
 telaL()
+telaL2()
