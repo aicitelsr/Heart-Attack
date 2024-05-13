@@ -72,9 +72,6 @@ def parallel_cateogries():
                                 col2.plotly_chart(grafico,use_container_width=True)         
         if len(colunas) <=1:
             st.error('Deve Haver no Mínimo Duas Colunas', icon='🚨')                    
-                            
-                    
-    
 
 def histograms():
     st.subheader('Histogramas')
@@ -96,12 +93,41 @@ def boxplot():
           grafico= px.box(dfp, x=colunas)
     with col2:
         col2.plotly_chart(grafico,use_container_width=True)
+
+def density_contour():
+    st.subheader('Contorno de densidade')
+    
+    with st.container():
+        col1, col2 = st.columns(2)
+        with col1:
+            x_axis = st.selectbox(
+            'Selecione uma coluna para o eixo X',
+            (dfp.columns),
+            placeholder = 'Escolha a coluna desejada...',
+            key='density_contour_x'
+        )
+
+        with col2:
+            y_axis = st.selectbox(
+            'Selecione uma coluna para o eixo Y',
+            (dfp.columns),
+            placeholder = 'Escolha a coluna desejada...',
+            key='density_contour_y'
+        )
+        
+        plot = st.button('Plotar gráfico', key='bt_density_contour')
+
+        if plot:
+            fig = px.density_contour(dfp, x=dfp[x_axis], y=dfp[y_axis], facet_col=dfp['Sex'], title=f'Contorno de densidade: {x_axis} & {y_axis}')
+            st.plotly_chart(fig)
+
 def buildPage():
     profilling()
     parallel_cateogries()
     histograms()
     boxplot()
     scatterPlot()
+    density_contour()
 
 if __name__ == '__main__':
     buildPage()
