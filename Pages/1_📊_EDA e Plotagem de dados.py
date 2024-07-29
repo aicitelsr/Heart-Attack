@@ -8,49 +8,20 @@ dfp = pd.read_parquet('data/heart_disease.parquet')
 
 st.title('Análise exploratória dos dados e Plotagens')
 
-def scatterPlot():
-    def readDataset():
-        dataset = pd.read_csv("data/heart_disease.csv")
-        return dataset
+
+def profilling():
+     st.write('Inserir o Dicionário aqui talvez ??')
     
-    # Construção da tela
-    st.subheader('Scatter Plot')
-    dataset = readDataset()
-
-    with st.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            x_axis = st.selectbox(
-            'Selecione uma coluna para o eixo X',
-            (dataset.columns),
-            placeholder = 'Escolha a coluna desejada...'
-        )
-
-        with col2:
-            y_axis = st.selectbox(
-            'Selecione uma coluna para o eixo Y',
-            (dataset.columns),
-            placeholder = 'Escolha a coluna desejada...'
-        )
+     st.subheader("Data Profilling")
+    
+     with st.expander('Proffiling De Dados'):
             
-        plot = st.button('Plotar gráfico')
-        
-        if plot:
-            plot = px.scatter(data_frame=dataset, x=dataset[x_axis], y=dataset[y_axis], trendline="ols")
-            st.plotly_chart(plot)
-# def profilling():
-#     st.write('Inserir o Dicionário aqui talvez ??')
-    
-#     st.subheader("Data Profilling")
-    
-#     with st.expander('Proffiling De Dados'):
-            
-#             # Carregar o conteúdo do arquivo HTML
-#         with open("data/eda.html", "r") as file:
-#                 pagina_html = file.read()
+             # Carregar o conteúdo do arquivo HTML
+         with open("data/eda.html", "r") as file:
+                 pagina_html = file.read()
 
-#                 # Exibir o conteúdo HTML
-#         st.components.v1.html(pagina_html, height = 700, scrolling=True)
+                 # Exibir o conteúdo HTML
+         st.components.v1.html(pagina_html, height = 700, scrolling=True)
 
 def parallel_cateogries():
 
@@ -94,32 +65,6 @@ def boxplot():
     with col2:
         col2.plotly_chart(grafico,use_container_width=True)
 
-def density_contour():
-    st.subheader('Contorno de densidade')
-    
-    with st.container():
-        col1, col2 = st.columns(2)
-        with col1:
-            x_axis = st.selectbox(
-            'Selecione uma coluna para o eixo X',
-            (dfp.columns),
-            placeholder = 'Escolha a coluna desejada...',
-            key='density_contour_x'
-        )
-
-        with col2:
-            y_axis = st.selectbox(
-            'Selecione uma coluna para o eixo Y',
-            (dfp.columns),
-            placeholder = 'Escolha a coluna desejada...',
-            key='density_contour_y'
-        )
-        
-        plot = st.button('Plotar gráfico', key='bt_density_contour')
-
-        if plot:
-            fig = px.density_contour(dfp, x=dfp[x_axis], y=dfp[y_axis], facet_col=dfp['Sex'], title=f'Contorno de densidade: {x_axis} & {y_axis}')
-            st.plotly_chart(fig)
 
 def idade(df):
     bins = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, float('inf')]
@@ -202,17 +147,13 @@ def box_plot():
     st.plotly_chart(fig)
 
 def buildPage():
-    #profilling()
+    profilling()
     parallel_cateogries()
     histograms()
     boxplot()
-    scatterPlot()
-    density_contour()
     bar_one()
     bar_two()
     box_plot()
-
-
 
 
 if __name__ == '__main__':
