@@ -2,18 +2,71 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 
-
 df = pd.read_csv('data/heart_disease.csv')
 dfp = pd.read_parquet('data/heart_disease.parquet')
 
 st.title('Análise exploratória dos dados e Plotagens')
 
+def dataDict():
+     st.subheader("Dicionário de Dados")
+     with st.expander('Dicionario de dados'):
+        st.write(
+        '''
+        <table>
+            <tr><th>COLUNA DATASET</th><th>DESCRIÇÃO</th></tr>
+            <tr><td>HighBP</td><td> Indica se a pessoa tem pressão alta (atestado por um profissional de saúde)</td></tr>
+            <tr><td>HighChol</td><td> Indica se a pessoa tem colesterol alto (atestado por um profissional de saúde)</td></tr>
+            <tr><td>CholCheck </td><td> Indica se a pessoa fez alguma checagem de colesterol nos últimos 5 anos</td></tr>
+            <tr><td>BMI </td><td> IMC - Índice de Massa Corporal</td></tr>
+            <tr><td>Smoker </td><td> Indica se a pessoa já fumou mais de 100 cigarros em sua vida (100 cigarros = 5 maços de cigarro)</td></tr>
+            <tr><td>Stroke</td><td> Indica se a pessoa já teve algum AVC</td></tr>
+            <tr><td>Diabetes</td><td> 0: A pessoa não tem um histórico de diabetes<br> 1: Pré-diabetico <br> 2: Sofre de qualquer tipo de diabetes</td></tr>
+            <tr><td>PhysActivity</td><td> Indica se a pessoa faz pelo menos um exercício físico em sua rotina diária</td></tr>
+            <tr><td>Fruits</td><td> Indica se a pessoa consome mas de uma fruta por dia</td></tr>
+            <tr><td>Veggies</td><td> Indica se a pessoa consome mais de um vegetal por dia</td></tr>
+            <tr><td>HvyAlcoholConsump</td><td> Indica se a pessoa consome mais do que 14 drinks por semana</td></tr>
+            <tr><td>AnyHealthCare</td><td> Indica se a pessoa tem algum tipo de plano de saúde</td></tr>
+            <tr><td>NoDocbcCost</td><td> Indica se a pessoa já quis visitar algum médico mas não conseguiu, devido ao custo</td></tr>
+            <tr><td>GenHlth</td><td> Indica o quão bem é a saúde (no geral) da pessoa: <br> Varia de 1 (excelente) a 5 (ruim)</td></tr>
+            <tr><td>Menthlth</td><td> Indica o número de dias, dentro de um período de 30, que a pessoa teve uma má saúde mental</td></tr>
+            <tr><td>Physhlth</td><tD> Indica o número de dias, dentro de um período de 30, que a pessoa teve uma má saúde física</td></tr>
+            <tr><td>Sex</td><td> Indica o sexo da pessoa | Sendo 0 = Feminino e 1 = Masculino</td></tr>
+            <tr><td>Age</td><td>Indica a faixa etária da pessoa:
+            <br>
+	            1 = 18-24
+            <br>     
+	            2 = 25-29
+            <br>
+	            3 = 30-34
+            <br>
+	            4 = 35-39
+            <br>
+	            5 = 40-44
+            <br>
+	            6 = 45-49
+            <br>
+	            7 = 50-54
+            <br>
+	            8 = 55-59
+            <br>
+	            9 = 60-64
+            <br>
+	            10 = 65-69
+            <br>
+	            11 = 70-74
+            <br>
+	            12 = 75-79
+            <br>
+	            13 = 80 ou mais velho</td></tr>
+            <br>
+            <tr><td>Education</td><td> Indica o grau de escolaridade mais alto completado. Sendo 0 = nunca foi a escola ou jardim de infância e 6 tendo atendido 4 anos de universidade ou mais.</td></tr>
+            <tr><td>Income </td><td> Indica o total de renda da casa, variando de:<br> 1 (<= $10.000) à 6 (>= $75.000)</td></tr>
+        </table>
+        <br>
+        ''', unsafe_allow_html=True)
 
 def profilling():
-     st.write('Inserir o Dicionário aqui talvez ??')
-    
      st.subheader("Data Profilling")
-    
      with st.expander('Proffiling De Dados'):
             
              # Carregar o conteúdo do arquivo HTML
@@ -147,6 +200,7 @@ def box_plot():
     st.plotly_chart(fig)
 
 def buildPage():
+    dataDict()
     profilling()
     parallel_cateogries()
     histograms()
