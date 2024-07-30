@@ -1,6 +1,8 @@
 import streamlit as st
+from streamlit.components.v1 import html
 import pandas as pd
 import plotly.express as px
+from streamlit.components.v1 import html
 
 df = pd.read_csv('data/heart_disease.csv')
 dfp = pd.read_parquet('data/heart_disease.parquet')
@@ -98,7 +100,7 @@ def parallel_cateogries():
             st.error('Deve Haver no Mínimo Duas Colunas', icon='🚨')                    
 
 def histograms():
-    st.subheader('Histogramas')
+    st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
     with col1:
           nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
@@ -107,8 +109,9 @@ def histograms():
           grafico= px.histogram(dfp,x=colunas, color='HeartDiseaseorAttack')
     with col2:
         col2.plotly_chart(grafico,use_container_width=True)
+
 def boxplot():
-    st.subheader("Gráfico de Caixa - Boxplot")
+    st.subheader("Boxplot")
     col1,col2= st.columns([.3,.7])
     with col1:
           nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
@@ -117,6 +120,12 @@ def boxplot():
           grafico= px.box(dfp, x=colunas)
     with col2:
         col2.plotly_chart(grafico,use_container_width=True)
+
+
+def box_plot():
+    fig = px.box(dfp, x='Sex', y='BMI')
+
+    st.plotly_chart(fig)
 
 
 def idade(df):
@@ -128,26 +137,26 @@ def idade(df):
 
     return df
 
-def bar_one():
-    st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
+# def bar_one():
+#     st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
 
-    dfp['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].astype('category')
+#     dfp['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].astype('category')
 
-    idade(dfp)
+#     idade(dfp)
 
-    binario_para_sim_nao(dfp)
+#     binario_para_sim_nao(dfp)
 
-    binario_para_genero(dfp)
+#     binario_para_genero(dfp)
     
-    agrupando_idade = dfp.groupby(
-        'Age')['HeartDiseaseorAttack'].value_counts().to_frame().reset_index()
+#     agrupando_idade = dfp.groupby(
+#         'Age')['HeartDiseaseorAttack'].value_counts().to_frame().reset_index()
 
-    agrupando_idade.columns = ['Age', 'HeartDiseaseorAttack', 'Total']
+#     agrupando_idade.columns = ['Age', 'HeartDiseaseorAttack', 'Total']
 
-    fig = px.bar(agrupando_idade, x="Age", y='Total',
-                 color="HeartDiseaseorAttack", title="Gráfico Idade x Doença Cardíaca",
-                 color_discrete_map={0: "#99ccff", 1: "red"})
-    st.plotly_chart(fig)
+#     fig = px.bar(agrupando_idade, x="Age", y='Total',
+#                  color="HeartDiseaseorAttack", title="Gráfico Idade x Doença Cardíaca",
+#                  color_discrete_map={0: "#99ccff", 1: "red"})
+#     st.plotly_chart(fig)
 
 
 def binario_para_sim_nao(df):
@@ -171,33 +180,32 @@ def binario_para_genero(df):
 
 
 def bar_two():
-    st.markdown('<h3>Histograma</h3>', unsafe_allow_html=True)
+    st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
 
-    colunas_binarias = ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'PhysActivity',
-                        'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk']
-    
-    coluna = st.selectbox("Selecione uma coluna binária para visualização:",
-                          options=colunas_binarias)
+    col1,col2=st.columns([.3,.7])
 
-    if coluna:
-        agrupando_por_sexo = dfp.groupby('Sex')[coluna].value_counts().to_frame().reset_index()
-        agrupando_por_sexo.columns = ['Sexo', coluna, 'Total']
+    with col1:
+
+        colunas_binarias = ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'PhysActivity',
+                            'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk']
         
-        fig = px.histogram(agrupando_por_sexo, x='Sexo', y='Total',
-                        color=coluna, barmode='group',
-                        color_discrete_map={0: 'lightgray', 1: 'royalblue'},
-                        title = f'Gráfico de barras: agrupando por sexo',
-                        labels={'Total': 'Número de Pessoas', coluna: coluna},
-                        height=500)
+        coluna = st.selectbox("Selecione uma coluna binária para visualização:",
+                            options=colunas_binarias)
 
-        st.plotly_chart(fig)
-    else:
-        st.warning("Por favor, selecione uma coluna binária para visualização.")
+        if coluna:
+            agrupando_por_sexo = dfp.groupby('Sex')[coluna].value_counts().to_frame().reset_index()
+            agrupando_por_sexo.columns = ['Sexo', coluna, 'Total']
+            
+            fig = px.histogram(agrupando_por_sexo, x='Sexo', y='Total',
+                            color=coluna, barmode='group',
+                            color_discrete_map={0: 'lightgray', 1: 'royalblue'},
+                            labels={'Total': 'Número de Pessoas', coluna: coluna},
+                            height=500)
+        else:
+            st.warning("Por favor, selecione uma coluna binária para visualização.")
+    with col2:
+         col2.plotly_chart(fig, use_container_width=True)
 
-def box_plot():
-    fig = px.box(dfp, x='Sex', y='BMI')
-
-    st.plotly_chart(fig)
 
 def buildPage():
     dataDict()
@@ -205,9 +213,9 @@ def buildPage():
     parallel_cateogries()
     histograms()
     boxplot()
-    bar_one()
-    bar_two()
     box_plot()
+    bar_two()
+
 
 
 if __name__ == '__main__':
