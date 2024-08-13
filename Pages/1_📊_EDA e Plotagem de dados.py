@@ -104,8 +104,7 @@ def histograms():
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
     with col1:
-          nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
-                       'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
+          nomes_colunas=['BMI', 'Age', 'Diabetes', 'Income', 'Education', 'MentHlth', 'PhysHlth']
           colunas=col1.selectbox('Colunas', options=nomes_colunas, key='histograma')
           grafico= px.histogram(dfp,x=colunas, color='HeartDiseaseorAttack')
     with col2:
@@ -137,28 +136,6 @@ def idade(df):
     df['Age'] = pd.cut(df['Age'], bins=bins, labels=labels, right=True)
 
     return df
-
-# def bar_one():
-#     st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
-
-#     dfp['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].astype('category')
-
-#     idade(dfp)
-
-#     binario_para_sim_nao(dfp)
-
-#     binario_para_genero(dfp)
-    
-#     agrupando_idade = dfp.groupby(
-#         'Age')['HeartDiseaseorAttack'].value_counts().to_frame().reset_index()
-
-#     agrupando_idade.columns = ['Age', 'HeartDiseaseorAttack', 'Total']
-
-#     fig = px.bar(agrupando_idade, x="Age", y='Total',
-#                  color="HeartDiseaseorAttack", title="Gráfico Idade x Doença Cardíaca",
-#                  color_discrete_map={0: "#99ccff", 1: "red"})
-#     st.plotly_chart(fig)
-
 
 def binario_para_sim_nao(df):
     colunas_binarias = [col for col in df.columns if (df[col].eq(0) | df[col].eq(1)).all() and col != 'Sex']
@@ -216,9 +193,7 @@ def buildPage():
     boxplot()
     box_plot()
     bar_two()
-
-
-
+    
 if __name__ == '__main__':
     buildPage()
 
