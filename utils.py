@@ -14,6 +14,8 @@ def transformData(df: pd.DataFrame) -> pd.DataFrame:
     __transformIncomeData(df)
     __transformEducationData(df)
     __transformDiabetesData(df)
+    __transformBMI(df)
+    __transformGenHealth(df)
     
     # Gerando os dummies
     df_d = pd.get_dummies(df)
@@ -41,3 +43,27 @@ def __transformDiabetesData(df) -> pd.DataFrame:
     diabetes = {0: 'Não possui diabetes', 1:'Pré-diabético', 2:'Diabético'}
     df['Diabetes'] = df['Diabetes'].replace(diabetes)
     return df
+
+def __transformBMI(df) -> pd.DataFrame:
+    df['BMI'] = df['BMI'].apply(__categorizeBMI)
+    return df
+
+def __categorizeBMI(value):
+    if value < 16:
+        return 'Abaixo do peso'
+    elif 16 <= value < 18.5:
+        return 'Peso normal baixo'
+    elif 18.5 <= value < 25:
+        return 'Peso normal'
+    elif 25 <= value < 30:
+        return 'Sobrepeso'
+    elif 30 <= value < 35:
+        return 'Obesidade Grau I'
+    elif 35 <= value < 40:
+        return 'Obesidade Grau II'
+    else:
+        return 'Obesidade Grau III'
+    
+def __transformGenHealth(df) -> pd.DataFrame:
+    genHealth = {1:'Execelente', 2:'Boa', 3:'Moderada', 4:'Ruim', 5:'Pobre'}
+    df['GenHlth'] = df['GenHlth'].replace(genHealth)  
