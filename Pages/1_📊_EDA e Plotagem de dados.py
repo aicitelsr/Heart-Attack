@@ -10,7 +10,7 @@ from utils import transformData
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
 
-# Quando necessário trabalhar com os dados transformados chamar df.transformData()
+# Quando necessário trabalhar com os dados transformados: transformData(readDatafrase_csv())) ou transformData(readDatafrase_parquet()))
 
 st.title('Análise exploratória dos dados e Plotagens')
 
