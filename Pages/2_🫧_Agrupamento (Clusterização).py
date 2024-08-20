@@ -15,14 +15,14 @@ from kmodes.kprototypes import KPrototypes
 import prince
 from utils import readDataframe_parquet
 from utils import transformData
-
+from utils import transformData2
 dfp = transformData(readDataframe_parquet())
-
+dfp2=transformData2(readDataframe_parquet())
 dfp_c= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
        'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
        'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
        'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
-       'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']]
+       'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
 # cotovelo
 # valores=[]
@@ -47,23 +47,23 @@ dfp_c= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
 # plt.show()
 
 
-kmodes = KModes(n_clusters=3, init='Huang', n_init=5, verbose=0, max_iter=10)
+kmodes = KModes(n_clusters=3, init='Huang', n_init=5, verbose=0, max_iter=10, random_state=42)
 clusters = kmodes.fit_predict(dfp_c)
-dfp_c['Cluster'] = clusters
+dfp_c.loc[:,'Cluster'] = clusters
 
 
 for feature in dfp_c.columns:
     if feature != 'Cluster':
         
         fig = px.histogram(dfp_c, x=feature, color='Cluster', 
-                           title=f'Distribuição de {feature} por Cluster',
+                           title=f'Distribuição de {feature} por Cluster com KModes',
                            labels={feature: feature},
                            color_discrete_sequence=px.colors.qualitative.Vivid)
         fig.update_layout(barmode='group')
         st.plotly_chart(fig)
 
-dfp_c2= dfp[['Smoker','PhysActivity','Sex',
-       'GenHlth','Age','Fruits', 'Veggies']]
+dfp_c2= dfp2[['Smoker','PhysActivity','Sex',
+       'GenHlth','Age','Fruits', 'Veggies']].copy()
 
 numericas=[]
 categoricas=[]
@@ -76,17 +76,17 @@ for i in dfp_c2.columns:
 categoricas_indices = [dfp_c2.columns.get_loc(col) for col in categoricas]
 categoricas_indices
 
-kproto = KPrototypes(n_clusters=3, init='Huang', verbose=0, max_iter=10)
+kproto = KPrototypes(n_clusters=3, init='Huang', verbose=0, max_iter=10, random_state=42)
 cluster2= kproto.fit_predict(dfp_c2,categorical=categoricas_indices)
 
-dfp_c2['Clusters']= cluster2
+dfp_c2.loc[:,'Clusters']= cluster2
 
 
 for feature in dfp_c2.columns:
     if feature != 'Clusters':
         
         fig = px.histogram(dfp_c2, x=feature, color='Clusters', 
-                           title=f'Distribuição de {feature} por Cluster',
+                           title=f'Distribuição de {feature} por Cluster com KPrototype',
                            labels={feature: feature},
                            color_discrete_sequence=px.colors.qualitative.Vivid)
         fig.update_layout(barmode='group')
@@ -105,6 +105,23 @@ for feature in dfp_c2.columns:
 
 # # In[ ]:
 
+dfp_c3= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
+       'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
+       'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
+       'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
+       'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
+kmeans= KMeans(n_clusters=3, max_iter=10, n_init='auto', random_state=42)
+cluster3= kmeans.fit_predict(dfp_c3)
 
+dfp_c3['Clusters']= cluster3
+for feature in dfp_c3.columns:
+    if feature != 'Clusters':
+        
+        fig = px.histogram(dfp_c3, x=feature, color='Clusters', 
+                           title=f'Distribuição de {feature} por Cluster com KMeans',
+                           labels={feature: feature},
+                           color_discrete_sequence=px.colors.qualitative.Vivid)
+        fig.update_layout(barmode='group')
+        st.plotly_chart(fig)
 
