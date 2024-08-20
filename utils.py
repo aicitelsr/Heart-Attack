@@ -24,6 +24,17 @@ def transformData(df: pd.DataFrame) -> pd.DataFrame:
     df_d = df_d.map(lambda x:1 if x is True else (0 if x is False else x))
     return df_d
 
+def transformData2(df: pd.DataFrame) -> pd.DataFrame:
+    # Transformando a coluna idade
+    __transformAgeData(df)
+    __transformIncomeData(df)
+    __transformEducationData(df)
+    __transformDiabetesData(df)
+    __transformBMI(df)
+    __transformGenHealth(df)
+    dfp2=df
+    return dfp2
+
 def __transformAgeData(df: pd.DataFrame) -> pd.DataFrame:
     age = {1:'18-24',2:'25-29',3:'30-34',4:'35-39',5:'40-44',6:'45-49',7:'50-54',8:'55-59',9:'60-64',10:'65-69',11:'70-74',12:'75-79', 13:'Mais de 80'}
     df['Age']= df['Age'].replace(age)
