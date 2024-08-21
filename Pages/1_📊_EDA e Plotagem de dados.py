@@ -14,6 +14,10 @@ dfp = readDataframe_parquet()
 
 st.title('Análise exploratória dos dados e Plotagens')
 
+custom_colors = ['#fa4d56',
+'#ffcdc6',
+]
+
 def dataDict():
      st.subheader("Dicionário de Dados")
      with st.expander('Dicionario de dados'):
@@ -91,10 +95,12 @@ def parallel_cateogries():
     with col1:
         nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
                         'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
-        colunas= col1.multiselect('Colunas',options=nomes_colunas)
+        colunas= col1.multiselect('Colunas',options=nomes_colunas, default=['HeartDiseaseorAttack'])
 
         if len(colunas) >=2:
-                grafico= px.parallel_categories(dfp[colunas])
+                
+
+                grafico= px.parallel_categories(dfp[colunas], color_continuous_scale=custom_colors)
                 button_input= st.button('Gerar Gráfico')
                 pronto = st.success('Gráfico Pronto Para Ser Gerado', icon='✅')
                 if button_input:
@@ -109,9 +115,11 @@ def histograms():
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
     with col1:
-          nomes_colunas=['BMI', 'Age', 'Diabetes_Diabético', 'Diabetes_Não possui diabetes', 'Diabetes_Pré-diabético', 'Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39', 'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64', 'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80', 'Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'Education_Nunca foi a escola (ou apenas foi à pré-escola)', 'Income_$10000-$14000', 'Income_$15000-$19999', 'Income_$20000-$24999', 'Income_$25000-$34999', 'Income_$35000-$49999', 'Income_$50000-$74999', 'Income_$75000 ou mais', 'Income_Menos de $10000']
+          nomes_colunas=['HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
+                        'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
           colunas=col1.selectbox('Colunas', options=nomes_colunas, key='histograma')
-          grafico= px.histogram(dfp,x=colunas, color='HeartDiseaseorAttack')
+          grafico= px.histogram(dfp,x=colunas, color='HeartDiseaseorAttack',  color_discrete_sequence=custom_colors)
+          grafico.update_layout(bargap=0.1)
     with col2:
         col2.plotly_chart(grafico,use_container_width=True)
 
