@@ -6,6 +6,7 @@ from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from scipy.stats import randint
 from sklearn.metrics import classification_report
 from catboost import CatBoostClassifier
+from sklearn.linear_model import LogisticRegression
 
 # Tree Visualisation
 from sklearn.tree import export_graphviz
@@ -70,6 +71,44 @@ def __randomForest():
     st.subheader('Matriz de Confusão')
     __plotConfusionMatrix(pred)
 
+def _regressaoLogistica():
+    logistica = LogisticRegression(random_state=1,max_iter=200,penalty='l2',
+                               tol=0.0001, C=1,solver ='lbfgs')
+    logistica.fit(x_train, y_train)
+
+
+    pred = logistica.predict(x_test)
+
+    # Streamlit application
+    st.title('Coeficientes da Regressão Logística')
+
+    # Importância das características usando coeficientes
+    coef = logistica.coef_[0]  # Coeficientes do modelo
+    feature_importances = pd.Series(coef, index=x_train.columns).sort_values(ascending=False)
+
+    # Mostrar o gráfico de importâncias
+    st.subheader('Importância das Características')
+    fig, ax = plt.subplots()
+    feature_importances.plot.barh(ax=ax)
+    ax.set_title('Importância das Características')
+    ax.set_xlabel('Coeficiente')  # Altere de 'Importância' para 'Coeficiente' para refletir o que está sendo mostrado
+    ax.set_ylabel('Características')
+    st.pyplot(fig)
+
+
+    
+    st.subheader('Resultados do modelo Regressao Logistica')
+
+    # Resultados do Modelo
+    st.write(classification_report(y_test, pred))
+
+    # Mostrar o gráfico de Matriz de confusão
+    st.subheader('Matriz de Confusão')
+    __plotConfusionMatrix(pred)
+
+    
+
+
 def __tuningRandomForest():
     param_dist = {
         'n_estimators': randint(50, 1000),
@@ -114,6 +153,7 @@ def __plotConfusionMatrix(pred):
 
 def buildPage():
     __randomForest()
+    _regressaoLogistica()
 
 if __name__ == '__main__':
     buildPage()
