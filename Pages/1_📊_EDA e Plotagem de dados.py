@@ -98,8 +98,6 @@ def parallel_cateogries():
         colunas= col1.multiselect('Colunas',options=nomes_colunas, default=['HeartDiseaseorAttack'])
 
         if len(colunas) >=2:
-                
-
                 grafico= px.parallel_categories(dfp[colunas], color_continuous_scale=custom_colors)
                 button_input= st.button('Gerar Gráfico')
                 pronto = st.success('Gráfico Pronto Para Ser Gerado', icon='✅')
