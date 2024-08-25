@@ -1,7 +1,4 @@
 import streamlit as st
-st.title('Agrupamento')
-
-
 import pandas as pd
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as pl
@@ -11,117 +8,215 @@ from sklearn.metrics import silhouette_score
 import seaborn as sns
 import numpy as np
 from kmodes.kmodes import KModes
-from kmodes.kprototypes import KPrototypes
-import prince
 from utils import readDataframe_parquet
 from utils import transformData
 from utils import transformData2
+import pickle 
+import matplotlib.pyplot as plt
+import seaborn as sn
+
+st.title('Agrupamento KModes e KMeans')
+
 dfp = transformData(readDataframe_parquet())
 dfp2=transformData2(readDataframe_parquet())
+
 dfp_c= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
        'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
        'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
        'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
        'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
-# cotovelo
-# valores=[]
-# #n_clusters: Número de clusters desejado.
-# #init: Método de inicialização dos centroids ('Huang' é o padrão, mas você também pode usar 'Cao').
-# #n_init: Número de vezes que o algoritmo será rodado com diferentes centroides iniciais.
-# #verbose: Controle da verbosidade (0 para nenhum, 1 para output detalhado).
-# for i in range(1,6):
-#     km= KModes(n_clusters=i, init='Huang', n_init=5, verbose=0, max_iter=10)
-#     km.fit_predict(dfp_c)
-#     valores.append(km.cost_)
-# valores
+#kmodes
+with open('C:\VScode\Projetos3\Models\kmodes_modelo.pkl', 'rb') as file:
+    kmodes = pickle.load(file)
 
+clusters = kmodes.predict(dfp_c)
+dfp_c.loc[:,'Clusters'] = clusters
+dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
 
-# plt.figure(figsize=(10, 6))
-# plt.plot(range(1,6), valores, marker='o', linestyle='--', color='b')
-# plt.xlabel('Número de Clusters')
-# plt.ylabel('Custo')
-# plt.title('Gráfico do Cotovelo para K-Modes')
-# plt.xticks(range(1,6))
-# plt.grid(True)
-# plt.show()
+#kmeans
+with open('C:\VScode\Projetos3\Models\kmeans_modelo.pkl', 'rb') as file:
+    kmeans = pickle.load(file)
 
-
-kmodes = KModes(n_clusters=3, init='Huang', n_init=5, verbose=0, max_iter=10, random_state=42)
-clusters = kmodes.fit_predict(dfp_c)
-dfp_c.loc[:,'Cluster'] = clusters
-
-
-for feature in dfp_c.columns:
-    if feature != 'Cluster':
-        
-        fig = px.histogram(dfp_c, x=feature, color='Cluster', 
-                           title=f'Distribuição de {feature} por Cluster com KModes',
-                           labels={feature: feature},
-                           color_discrete_sequence=px.colors.qualitative.Vivid)
-        fig.update_layout(barmode='group')
-        st.plotly_chart(fig)
-
-dfp_c2= dfp2[['Smoker','PhysActivity','Sex',
-       'GenHlth','Age','Fruits', 'Veggies']].copy()
-
-numericas=[]
-categoricas=[]
-for i in dfp_c2.columns:
-    if dfp_c2[i].dtypes=='float64':
-        numericas.append(i)
-    elif dfp_c2[i].dtypes=='object':
-        categoricas.append(i)
-
-categoricas_indices = [dfp_c2.columns.get_loc(col) for col in categoricas]
-categoricas_indices
-
-kproto = KPrototypes(n_clusters=3, init='Huang', verbose=0, max_iter=10, random_state=42)
-cluster2= kproto.fit_predict(dfp_c2,categorical=categoricas_indices)
-
-dfp_c2.loc[:,'Clusters']= cluster2
-
-
-for feature in dfp_c2.columns:
-    if feature != 'Clusters':
-        
-        fig = px.histogram(dfp_c2, x=feature, color='Clusters', 
-                           title=f'Distribuição de {feature} por Cluster com KPrototype',
-                           labels={feature: feature},
-                           color_discrete_sequence=px.colors.qualitative.Vivid)
-        fig.update_layout(barmode='group')
-        st.plotly_chart(fig)
-
-
-# from sklearn.metrics import davies_bouldin_score
-
-# db_score = davies_bouldin_score(dfp_c, clusters)
-# print(f"Davies-Bouldin Index: {db_score}")
-
-
-# db_score2 = davies_bouldin_score(dfp_c2, clusters)
-# print(f"Davies-Bouldin Index: {db_score2}")
-
-
-# # In[ ]:
-
-dfp_c3= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
+dfp_c2= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
        'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
        'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
        'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
        'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
-kmeans= KMeans(n_clusters=3, max_iter=10, n_init='auto', random_state=42)
-cluster3= kmeans.fit_predict(dfp_c3)
+cluster2= kmeans.predict(dfp_c2)
+dfp_c2['Clusters'] = cluster2
+dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
 
-dfp_c3['Clusters']= cluster3
-for feature in dfp_c3.columns:
-    if feature != 'Clusters':
+def labels(df):
+    problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
+    df['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].replace(problema)
+
+    grupos= {0:'Grupo 0',1:'Grupo 1', 2:'Grupo 2'}
+    df['Clusters']= df['Clusters'].replace(grupos)
+
+    fumante = {0:'Não Fuma',1:'Fuma'}
+    df['Smoker'] = df['Smoker'].replace(fumante)
+    
+    atividade_f={0:'Não Pratica Ativades Físicas',1:'Pratica Atividades Físicas'}
+    df['PhysActivity'] = df['PhysActivity'].replace(atividade_f)
+
+    sexo = {0:'Mulher',1:'Homem'}
+    df['Sex'] = df['Sex'].replace(sexo)
+
+    saude1= {0:'Não Tem uma Boa Saúde',1:'Tem uma boa Saúde'}
+    df['GenHlth_Boa']=df['GenHlth_Boa'].replace(saude1)
+
+    saude2= {0:'Não Tem uma Saúde Moderada',1:'Tem uma Saúde Moderada'}
+    df['GenHlth_Moderada'] =df['GenHlth_Moderada'].replace(saude2)
+
+    saude3= {0:'Não Tem uma Saúde Execelente',1:'Tem uma Saúde Execelente'}
+    df['GenHlth_Execelente'] =df['GenHlth_Execelente'].replace(saude3)
+
+    saude4= {0:'Não Tem Saúde Ruim',1:'Tem uma Saúde Ruim'}
+    df['GenHlth_Ruim'] = df['GenHlth_Ruim'].replace(saude4)
+
+    saude5= {0:'Não Tem uma Saúde Podre',1:'Tem uma Saúde Podre'}
+    df['GenHlth_Pobre'] = df['GenHlth_Pobre'].replace(saude4)
+
+    frutas = {0:'Não Cosomem Frutas',1:'Consomem Frutas'}
+    df['Fruits'] = df['Fruits'].replace(frutas)
+
+    legumes= {0:'Não Consomem Legumes ou Verduras', 1:'Não Consomem Legumes ou Verduras'}
+    df['Veggies'] = df['Veggies'].replace(legumes)
+
+    return df
+
+dfp_c=labels(dfp_c)
+dfp_c2= labels(dfp_c2)
+
+def grafico1():
+    st.subheader('Histogramas Relacionados a Hábitos e Características dos Individuos')
+    dfp_c.rename(columns={
+    'HeartDiseaseorAttack':'Problemas Cardíacos',
+    'Smoker': 'Fumantes',
+    'PhysActivity': "Pratica Atividade Física",
+    'Sex': 'Sexo',
+    'GenHlth_Boa': 'Saúde Boa',
+    'GenHlth_Execelente': 'Saúde Excenlente',
+    'GenHlth_Moderada': 'Saúde Moderada',
+    'GenHlth_Pobre': 'Saúde Probre',
+    'GenHlth_Ruim': 'Saúde Ruim',
+    'Fruits': 'Consumo de Frutas',
+    'Veggies': 'Consumo de Legumes e Verduras'
+}, inplace=True)
+
+    dfp_c2.rename(columns={
+    'HeartDiseaseorAttack':'Problemas Cardíacos',
+    'Smoker': 'Fumantes',
+    'PhysActivity': "Pratica Atividade Física",
+    'Sex': 'Sexo',
+    'GenHlth_Boa': 'Saúde Boa',
+    'GenHlth_Execelente': 'Saúde Excenlente',
+    'GenHlth_Moderada': 'Saúde Moderada',
+    'GenHlth_Pobre': 'Saúde Probre',
+    'GenHlth_Ruim': 'Saúde Ruim',
+    'Fruits': 'Consumo de Frutas',
+    'Veggies': 'Consumo de Legumes e Verduras'
+}, inplace=True)
+
+    
+    nome_colunas= ['Problemas Cardíacos','Fumantes',"Pratica Atividade Física",'Sexo','Saúde Boa','Saúde Excenlente','Saúde Moderada','Saúde Probre',
+                    'Saúde Ruim','Consumo de Frutas','Consumo de Legumes e Verduras']
+    colunas=st.selectbox('Colunas', options=nome_colunas, key='histograma')
+    col1,col2 = st.columns(2)
+    
+    button_input = st.button('Gerar Gráfico')
+    with col1:
         
-        fig = px.histogram(dfp_c3, x=feature, color='Clusters', 
-                           title=f'Distribuição de {feature} por Cluster com KMeans',
-                           labels={feature: feature},
-                           color_discrete_sequence=px.colors.qualitative.Vivid)
-        fig.update_layout(barmode='group')
-        st.plotly_chart(fig)
+        if button_input:
+            st.subheader('Histrograma 1')
+            fig = px.histogram(dfp_c, x=colunas, color='Clusters', 
+                                title=f'Distribuição de {colunas} por Cluster(KModes)',
+                                #labels={'HeartDiseaseorAttack': 'Problemas Cardíacos', 'count':'Quantidade'},
+                                color_discrete_sequence=px.colors.qualitative.Vivid)
+            fig.update_layout(barmode='group')
+            st.plotly_chart(fig)
+        with col2:
+            
+            if button_input:
+                st.subheader('Histrograma 2')
+                fig = px.histogram(dfp_c2, x=colunas, color='Clusters', 
+                                    title=f'Distribuição de {colunas} por Cluster(KMeans)',
+                                    #labels={'HeartDiseaseorAttack': 'Problemas Cardíacos', 'count':'Quantidade'},
+                                    color_discrete_sequence=px.colors.qualitative.Vivid)
+                fig.update_layout(barmode='group')
+                st.plotly_chart(fig)
+grafico1()
+
+def matrix():
+    dfp_c.rename(columns={
+    'HeartDiseaseorAttack':'Problemas Cardíacos',
+    'Smoker': 'Fumantes',
+    'PhysActivity': "Pratica Atividade Física",
+    'Sex': 'Sexo',
+    'GenHlth_Boa': 'Saúde Boa',
+    'GenHlth_Execelente': 'Saúde Excenlente',
+    'GenHlth_Moderada': 'Saúde Moderada',
+    'GenHlth_Pobre': 'Saúde Probre',
+    'GenHlth_Ruim': 'Saúde Ruim',
+    'Fruits': 'Consumo de Frutas',
+    'Veggies': 'Consumo de Legumes e Verduras'
+}, inplace=True)
+
+    dfp_c2.rename(columns={
+    'HeartDiseaseorAttack':'Problemas Cardíacos',
+    'Smoker': 'Fumantes',
+    'PhysActivity': "Pratica Atividade Física",
+    'Sex': 'Sexo',
+    'GenHlth_Boa': 'Saúde Boa',
+    'GenHlth_Execelente': 'Saúde Excenlente',
+    'GenHlth_Moderada': 'Saúde Moderada',
+    'GenHlth_Pobre': 'Saúde Probre',
+    'GenHlth_Ruim': 'Saúde Ruim',
+    'Fruits': 'Consumo de Frutas',
+    'Veggies': 'Consumo de Legumes e Verduras'
+}, inplace=True)
+
+    st.subheader('Matrizes de Confusão Relacionadas a Hábitos e Características dos Individuos')
+    nome_colunas=['Problemas Cardíacos','Fumantes',"Pratica Atividade Física",'Sexo','Saúde Boa','Saúde Excenlente','Saúde Moderada','Saúde Probre',
+                    'Saúde Ruim','Consumo de Frutas','Consumo de Legumes e Verduras']
+    colunas=st.selectbox('Colunas', options=nome_colunas, key='matriz')
+    button_input = st.button('Gerar Matrizes')
+
+    col1,col2= st.columns(2)
+    with col1:
+        st.write('Matriz 1')
+
+        confusion_matrix = pd.crosstab(dfp_c['Clusters'], dfp_c[colunas])
+        if button_input:
+            plt.figure(figsize=(10, 6))
+            sns.heatmap(confusion_matrix, annot=True, cmap='Blues', fmt='d')
+            plt.title(f'Matriz de Confusão(KModes): {colunas}')
+            plt.xlabel('Target')
+            plt.ylabel('Cluster')
+            st.pyplot(plt)
+    with col2:
+        st.write('Matriz 2')
+        confusion_matrix = pd.crosstab(dfp_c2['Clusters'], dfp_c2[colunas])
+        if button_input:
+            plt.figure(figsize=(10, 6))
+            sns.heatmap(confusion_matrix, annot=True, cmap='Blues', fmt='d')
+            plt.title(f'Matriz de Confusão(KMeans): {colunas}')
+            plt.xlabel('Target')
+            plt.ylabel('Cluster')
+            st.pyplot(plt)
+matrix()
+
+# # from sklearn.metrics import davies_bouldin_score
+
+# # db_score = davies_bouldin_score(dfp_c, clusters)
+# # print(f"Davies-Bouldin Index: {db_score}")
+
+
+# # db_score2 = davies_bouldin_score(dfp_c2, clusters)
+# # print(f"Davies-Bouldin Index: {db_score2}")
+
+
+
 
