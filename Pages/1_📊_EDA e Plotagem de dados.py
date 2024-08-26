@@ -5,10 +5,11 @@ import plotly.express as px
 from streamlit.components.v1 import html
 from utils import readDataframe_csv
 from utils import readDataframe_parquet
-from utils import transformData
+from utils import removeOutliersFromDf
 
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
+df_cleaned = removeOutliersFromDf(dfp)
 
 # Quando necessário trabalhar com os dados transformados: transformData(readDatafrase_csv())) ou transformData(readDatafrase_parquet()))
 
@@ -136,7 +137,7 @@ def boxplot():
     st.subheader("Filtros")
 
     col1, col2 = st.columns([0.3, 0.7])
-    
+
     with st.container():
         variaveis = ['BMI', 'MentHlth, PhysHlth']   
         escolha_variavel = st.selectbox('Escolha a Variável para o Boxplot:', options=variaveis)
@@ -147,28 +148,30 @@ def boxplot():
         filtro_sexo = st.checkbox('Filtrar por Sexo', disabled=not filtros_ativados)
         filtro_nenhum = st.checkbox("Nenhum")
 
+        # Checkbox para selecionar o DataFrame
+        show_outliers = st.checkbox('Remover outliers', value=False)
+        selected_df = df_cleaned if show_outliers else dfp
+
         grafico = None 
-    
+
         if escolha_variavel == 'BMI':
             if filtro_idade:
-                grafico = px.box(dfp, x='Age', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por idade e Doença Cardíaca', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(dfp['Age'].unique())})
+                grafico = px.box(selected_df, x='Age', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por idade e Doença Cardíaca', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(selected_df['Age'].unique())})
             elif filtro_sexo:
-                grafico = px.box(dfp, x='Sex', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por sexo e Doença Cardíaca', color_discrete_sequence=custom_colors)
+                grafico = px.box(selected_df, x='Sex', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por sexo e Doença Cardíaca', color_discrete_sequence=custom_colors)
             else:
-                grafico = px.box(dfp, y='BMI', color='HeartDiseaseorAttack', title='Boxplot de IMC por Doença Cardíaca', color_discrete_sequence=custom_colors)
-        
-        
+                grafico = px.box(selected_df, y='BMI', color='HeartDiseaseorAttack', title='Boxplot de IMC por Doença Cardíaca', color_discrete_sequence=custom_colors)
         elif escolha_variavel == 'MentHlth, PhysHlth':
             variaveis_para_plotar = ['MentHlth', 'PhysHlth']
 
-            df_melted = dfp.melt(id_vars=['HeartDiseaseorAttack'], value_vars=variaveis_para_plotar, var_name='Variável', value_name='Valor')
+            df_melted = selected_df.melt(id_vars=['HeartDiseaseorAttack'], value_vars=variaveis_para_plotar, var_name='Variável', value_name='Valor')
 
             if filtro_idade:
-                df_melted['Age'] = dfp['Age']
+                df_melted['Age'] = selected_df['Age']
                 
-                grafico = px.box(df_melted, x='Age', y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(dfp['Age'].unique())}, title='Boxplot de Saúde Mental e Física por Idade')
+                grafico = px.box(df_melted, x='Age', y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(selected_df['Age'].unique())}, title='Boxplot de Saúde Mental e Física por Idade')
             elif filtro_sexo:
-                df_melted['Sex'] = dfp['Sex']
+                df_melted['Sex'] = selected_df['Sex']
 
                 grafico = px.box(df_melted, x='Sex', y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, title='Boxplot de Saúde Mental e Física por Sexo')
             else:
@@ -179,20 +182,6 @@ def boxplot():
                 st.plotly_chart(grafico, use_container_width=True)
         else:
             st.warning('Selecione uma variável e aplique um filtro para visualizar o gráfico.')
-        
-
-# Exemplo de chamada da função (isso deve estar no seu arquivo principal Streamlit)
-# def boxplot():
-#     st.subheader("Boxplot")
-#     col1,col2= st.columns([.3,.7])
-#     with col1:
-#           nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
-#                        'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
-#           colunas=col1.selectbox('Colunas', options=nomes_colunas, key='boxplot')
-
-#           grafico= px.box(dfp, x='HighBP', y='BMI', color='Age')
-#     with col2:
-#         col2.plotly_chart(grafico,use_container_width=True)
 
 def idade():
     bins = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, float('inf')]
