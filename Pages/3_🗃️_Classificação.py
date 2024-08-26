@@ -14,80 +14,78 @@ from IPython.display import Image
 
 import streamlit as st
 import pandas as pd
-import seaborn as sns
 from utils import readDataframe_parquet
 from utils import transformData
 import matplotlib.pyplot as plt
 
-st.title('Classificação')
-dfp = transformData(readDataframe_parquet())
+def _showReport(report):
+    df_results = {
+                'classe': [],
+                'precision': [],
+                'recall': [],
+                'f1-score': [],
+                'support': [],
+            }
 
-# Dropando variáveis que podem não ser útil para a classificação (+ variável target)
-dfp_target = dfp['HeartDiseaseorAttack']
-dfp= dfp.drop(['HeartDiseaseorAttack','Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'MentHlth', 'PhysHlth'], axis=1)
+    accuracy = 0
+    support = 0
 
-# Divisão entre treino e teste
-x_train, x_test, y_train, y_test = train_test_split(dfp, dfp_target, test_size=0.2, random_state=42)
+    for key, value in report.items():
+      if key == 'accuracy':
+        accuracy = value
+      else:
+        df_results['classe'].append(key)
+        df_results['precision'].append(value['precision'])
+        df_results['recall'].append(value['recall'])
+        df_results['f1-score'].append(value['f1-score'])
+        support = int(value['support'])
+        df_results['support'].append(support)
 
-def __randomForest():
+    df_results = pd.DataFrame(df_results)
+    df_results.style.format({'precision': '{:.2%}', 'recall': '{:.2%}', 'f1-score': '{:.2%}', 'support': '{:.0f}'})
+    st.write(f'''
+                <b>Accuracy: {accuracy:.4%}</b><br/>
+                Support: {support:.0f}
+             ''', unsafe_allow_html=True)
+    st.write('')
+    st.dataframe(df_results)
+
+def _randomForest(x_train, y_train, x_test, y_test):
     rf = RandomForestClassifier(random_state=42, n_jobs=-1, max_depth= 15, n_estimators= 156)
     rf.fit(x_train, y_train)
 
-    # Visualizar três primeiras árvores da floresta
-    for i in range(3):
-        tree = rf.estimators_[i]
-        dot_data = export_graphviz(tree,
-                                   feature_names=x_train.columns,
-                                   filled=True,
-                                   max_depth=2,
-                                   impurity=False,
-                                   proportion=True,
-                                   )
-        st.graphviz_chart(dot_data)
+    pred_train = rf.predict(x_train)
+    pred_test = rf.predict(x_test)
 
-    pred = rf.predict(x_test)
+    # Gerar resultados
+    report_train = classification_report(y_train, pred_train, output_dict=True)
+    report_test = classification_report(y_test, pred_test, output_dict=True)
 
-    # Streamlit application
-    st.title('Feature importance do RandomForest')
+    # st.title('Feature importance do RandomForest')
     
     # Feature importances do RF
     importance = rf.feature_importances_
     feature_importances = pd.Series(importance, index=x_train.columns).sort_values(ascending=False)
 
     # Mostrar o gráfico de importâncias
-    st.subheader('Importância das Características')
     fig, ax = plt.subplots()
     feature_importances.plot.barh(ax=ax)
     ax.set_title('Importância das Características')
     ax.set_xlabel('Importância')
     ax.set_ylabel('Características')
-    st.pyplot(fig)
+    return report_train, report_test, fig
 
-    st.subheader('Resultados do modelo')
-    # Resultados do Modelo
-    st.write(classification_report(y_test, pred))
-
-    # Mostrar o gráfico de Matriz de confusão
-    st.subheader('Matriz de Confusão')
-    __plotConfusionMatrix(pred)
-
-def _regressaoLogistica():
+def _regressaoLogistica(x_train, y_train, x_test, y_test):
     logistica = LogisticRegression(random_state=1,max_iter=200,penalty='l2',
                                tol=0.0001, C=1,solver ='lbfgs')
     logistica.fit(x_train, y_train)
 
+    pred_train = logistica.predict(x_train)
+    pred_test = logistica.predict(x_test)
 
-    pred = logistica.predict(x_test)
-
-    # Streamlit application
-    st.title('Coeficientes da Regressão Logística')
-
-    # Importância das características usando coeficientes
     coef = logistica.coef_[0]  # Coeficientes do modelo
     feature_importances = pd.Series(coef, index=x_train.columns).sort_values(ascending=False)
 
-    # Mostrar o gráfico de importâncias
-    st.subheader('Importância das Características')
     fig, ax = plt.subplots()
     feature_importances.plot.barh(ax=ax)
     ax.set_title('Importância das Características')
@@ -95,65 +93,91 @@ def _regressaoLogistica():
     ax.set_ylabel('Características')
     st.pyplot(fig)
 
-
-    
-    st.subheader('Resultados do modelo Regressao Logistica')
-
-    # Resultados do Modelo
-    st.write(classification_report(y_test, pred))
-
-    # Mostrar o gráfico de Matriz de confusão
-    st.subheader('Matriz de Confusão')
-    __plotConfusionMatrix(pred)
+    return pred_train, pred_test, fig
 
     
 
-
-def __tuningRandomForest():
-    param_dist = {
-        'n_estimators': randint(50, 1000),
-        'max_depth': randint(1,20)
-        }
-    
-    rf = RandomForestClassifier()
-
-    rand_search = RandomizedSearchCV(rf, param_distributions=param_dist, n_iter=5, cv=5, random_state=42)
-    rand_search.fit(x_train, y_train)
-
-    st.write('Melhores parâmetros: ', rand_search.best_params_)
-
-def __catBoost():
-    cb = CatBoostClassifier(random_state=42, verbose=10, max_depth=15, iterations=156)
+def _catBoost(x_train, y_train, x_test, y_test):
+    cb = CatBoostClassifier(random_state=42, max_depth=15, iterations=156)
 
     cb.fit(x_train, y_train)
-    cb_pred = cb.predict(x_test)
+    pred_train = cb.predict(x_train)
+    pred_test = cb.predict(x_test)
 
     # Avaliando o modelo
-    print(classification_report(y_test, cb_pred))
+    report_train = classification_report(y_train, pred_train, output_dict=True)
+    report_test = classification_report(y_test, pred_test, output_dict=True)
 
-    # Matriz de Confusão
-    __plotConfusionMatrix(cb_pred)
+    # Feature importances do RF
+    importance = cb.feature_importances_
+    feature_importances = pd.Series(importance, index=x_train.columns).sort_values(ascending=False)
 
-def __plotConfusionMatrix(pred):
-    cm = confusion_matrix(y_test, pred)
-    ConfusionMatrixDisplay(confusion_matrix=cm)
+    # Mostrar o gráfico de importâncias
+    fig, ax = plt.subplots()
+    feature_importances.plot.barh(ax=ax)
+    ax.set_title('Importância das Características')
+    ax.set_xlabel('Importância')
+    ax.set_ylabel('Características')
+    return report_train, report_test, fig
 
-    # Criar a visualização da matriz de confusão
-    fig, ax = plt.subplots(figsize=(8, 6))  # Ajuste o tamanho conforme necessário
-    disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-    disp.plot(ax=ax, cmap='viridis', values_format='d')  # Ajuste o cmap conforme desejado
+# def _plotConfusionMatrix(y_test, pred):
+#     cm = confusion_matrix(y_test, pred)
+#     ConfusionMatrixDisplay(confusion_matrix=cm)
 
-    # Adicionar título e rótulos
-    ax.set_title('Matriz de Confusão')
-    ax.set_xlabel('Previsão')
-    ax.set_ylabel('Real')
+#     # Criar a visualização da matriz de confusão
+#     fig, ax = plt.subplots(figsize=(8, 6))  # Ajuste o tamanho conforme necessário
+#     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
+#     disp.plot(ax=ax, cmap='viridis', values_format='d')  # Ajuste o cmap conforme desejado
 
-    # Exibir a matriz de confusão no Streamlit
-    st.pyplot(fig)
+#     # Adicionar título e rótulos
+#     ax.set_title('Matriz de Confusão')
+#     ax.set_xlabel('Previsão')
+#     ax.set_ylabel('Real')
+
+#     # Exibir a matriz de confusão no Streamlit
+#     st.pyplot(fig)
 
 def buildPage():
-    __randomForest()
-    _regressaoLogistica()
+    st.title('Classificação')
+    
+    dfp = transformData(readDataframe_parquet())
+
+    # Dropando variáveis que podem não ser útil para a classificação (+ variável target)
+    dfp_target = dfp['HeartDiseaseorAttack']
+    dfp= dfp.drop(['HeartDiseaseorAttack','Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'MentHlth', 'PhysHlth'], axis=1)
+
+    # Divisão entre treino e teste
+    x_train, x_test, y_train, y_test = train_test_split(dfp, dfp_target, test_size=0.2, random_state=42)
+
+    classfiers = {
+        'Random Forest': lambda: _randomForest(x_train, y_train, x_test, y_test),
+        'CatBoost': lambda: _catBoost(x_train, y_train, x_test, y_test),
+        'Regressão Logística': lambda: _regressaoLogistica(x_train, y_train, x_test, y_test),
+        'KDD': None,
+    }
+
+    st.subheader('Escolha um modelo de Classificação:')
+    classfier = st.selectbox(label='Escolha o modelo', options=classfiers.keys())
+    confirmButton = st.button('Classificar')
+
+    if confirmButton:
+        report_train, report_test, fig = classfiers[classfier]()
+
+        c1, _, c2, c3 = st.columns([.49, .02, .49, 0.1]) 
+    
+        with c1:
+            st.subheader('Dados de treino')
+            _showReport(report_train)
+    
+        st.write('')
+
+        with c2:
+            st.subheader('Dados de teste')
+            _showReport(report_test)
+
+        # Features importance
+        st.subheader('Feature importance do Modelo:')
+        st.pyplot(fig)
 
 if __name__ == '__main__':
     buildPage()
