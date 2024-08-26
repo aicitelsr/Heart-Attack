@@ -110,7 +110,7 @@ def parallel_cateogries():
             st.error('Deve haver no mínimo duas colunas', icon='🚨')                
 
 def histograms():
-
+    
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
 

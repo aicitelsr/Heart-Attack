@@ -27,7 +27,7 @@ dfp_c= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
        'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
 #kmodes
-with open('C:\VScode\Projetos3\Models\kmodes_modelo.pkl', 'rb') as file:
+with open('Models\kmodes_modelo.pkl', 'rb') as file:
     kmodes = pickle.load(file)
 
 clusters = kmodes.predict(dfp_c)
@@ -35,7 +35,7 @@ dfp_c.loc[:,'Clusters'] = clusters
 dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
 
 #kmeans
-with open('C:\VScode\Projetos3\Models\kmeans_modelo.pkl', 'rb') as file:
+with open('Models\kmeans_modelo.pkl', 'rb') as file:
     kmeans = pickle.load(file)
 
 dfp_c2= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
