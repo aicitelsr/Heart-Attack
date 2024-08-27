@@ -76,24 +76,39 @@ def _randomForest(x_train, y_train, x_test, y_test):
     return report_train, report_test, fig
 
 def _regressaoLogistica(x_train, y_train, x_test, y_test):
-    logistica = LogisticRegression(random_state=1,max_iter=200,penalty='l2',
-                               tol=0.0001, C=1,solver ='lbfgs')
+    logistica = LogisticRegression(random_state=1, max_iter=200, penalty='l2', tol=0.0001, C=1, solver='lbfgs')
     logistica.fit(x_train, y_train)
 
     pred_train = logistica.predict(x_train)
     pred_test = logistica.predict(x_test)
 
+    # Gerar resultados
+    report_train = classification_report(y_train, pred_train, output_dict=True)
+    report_test = classification_report(y_test, pred_test, output_dict=True)
+
     coef = logistica.coef_[0]  # Coeficientes do modelo
     feature_importances = pd.Series(coef, index=x_train.columns).sort_values(ascending=False)
 
-    fig, ax = plt.subplots()
-    feature_importances.plot.barh(ax=ax)
-    ax.set_title('Importância das Características')
-    ax.set_xlabel('Coeficiente')  # Altere de 'Importância' para 'Coeficiente' para refletir o que está sendo mostrado
-    ax.set_ylabel('Características')
-    st.pyplot(fig)
+    
+    
+    fig, ax = plt.subplots(figsize=(10, 8))  # Aumenta o tamanho da figura
 
-    return pred_train, pred_test, fig
+    # Plota a importância das características
+    feature_importances.plot.barh(ax=ax)
+
+    # Título e rótulos
+    ax.set_title('Importância das Características', fontsize=16)
+    ax.set_xlabel('Coeficiente', fontsize=14)
+    ax.set_ylabel('Características', fontsize=14)
+
+    # Rotaciona as labels do eixo Y para 0 graus (padrão) e ajusta o tamanho da fonte
+    ax.tick_params(axis='y', labelsize=12)
+
+    # Ajusta o layout para que as labels não fiquem cortadas
+    plt.tight_layout()
+        
+    return report_train, report_test, fig
+
 
     
 
