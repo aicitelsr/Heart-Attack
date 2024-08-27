@@ -1,4 +1,5 @@
 from graphviz import Source
+import joblib
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, ConfusionMatrixDisplay
@@ -51,8 +52,7 @@ def _showReport(report):
     st.dataframe(df_results)
 
 def _randomForest(x_train, y_train, x_test, y_test):
-    rf = RandomForestClassifier(random_state=42, n_jobs=-1, max_depth= 15, n_estimators= 156)
-    rf.fit(x_train, y_train)
+    rf = joblib.load('./Models/random_forest_model.pkl.gz')
 
     pred_train = rf.predict(x_train)
     pred_test = rf.predict(x_test)
@@ -98,9 +98,8 @@ def _regressaoLogistica(x_train, y_train, x_test, y_test):
     
 
 def _catBoost(x_train, y_train, x_test, y_test):
-    cb = CatBoostClassifier(random_state=42, max_depth=15, iterations=156)
+    cb = joblib.load('./Models/catboost_model.pkl.gz')
 
-    cb.fit(x_train, y_train)
     pred_train = cb.predict(x_train)
     pred_test = cb.predict(x_test)
 
