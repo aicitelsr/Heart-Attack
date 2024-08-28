@@ -89,7 +89,7 @@ def profilling():
 
 def parallel_cateogries():
 
-    st.subheader('Categorias Paralelas')
+    st.subheader('Gráfico de Categorias Paralelas')
     col1,col2=st.columns([.3,.7])
     with col1:
         nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
@@ -106,17 +106,20 @@ def parallel_cateogries():
 
                                 grafico.update_layout(coloraxis_showscale=False)
 
-                                col2.plotly_chart(grafico,use_container_width=True)         
+                                col2.plotly_chart(grafico, use_container_width=True)         
         elif len(colunas) < 2:
-            st.error('Deve haver no mínimo duas colunas', icon='🚨')                
-
+            st.error('Deve haver no mínimo duas colunas', icon='🚨')   
+ 
 def histograms():
-    
+    binario_para_sim_nao()
+    binario_para_genero()
+    idade()
+
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
 
     with col1:
-          st.write("Selecione uma coluna para visualizar o histograma:")
+          st.write("Selecione uma coluna para visualizar o histograma: ")
           nomes_colunas=['HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
                         'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
           
@@ -125,9 +128,24 @@ def histograms():
     with col2:
         
         selected_colors = [custom_colors[0], custom_colors[-1]]
+
+        if colunas == 'Age':
+
+            dfp['Age'] = dfp['Age'].astype(str)
+
+            order = ['18-24', '25-29', '30-34', '35-39', '40-44', '45-49',
+              '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80 ou mais']
+            
+            dfp['Age'] = pd.Categorical(dfp['Age'], categories=order, ordered=True)
+
+            dfp.sort_values('Age', inplace=True)
+
+        st.write("Categorias ordenadas na coluna 'Age':")
+        st.write(dfp['Age'])
+
         grafico= px.histogram(dfp, x=colunas, color='HeartDiseaseorAttack', color_discrete_sequence=selected_colors)
         grafico.update_layout(bargap=0.1)
-        col2.plotly_chart(grafico,use_container_width=True)
+        col2.plotly_chart(grafico, use_container_width=True)
 
 def boxplot():
     binario_para_sim_nao()
@@ -184,11 +202,13 @@ def boxplot():
             st.warning('Selecione uma variável e aplique um filtro para visualizar o gráfico.')
 
 def idade():
-    bins = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, float('inf')]
-    labels = ['18-24', '25-29', '30-34', '35-39', '40-44', '45-49',
-              '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80 ou mais']
+    mapping = {
+        1: '18-24', 2: '25-29', 3: '30-34', 4: '35-39', 5: '40-44',
+        6: '45-49', 7: '50-54', 8: '55-59', 9: '60-64', 10: '65-69',
+        11: '70-74', 12: '75-79', 13: '80 ou mais'
+    }
     
-    dfp['Age'] = pd.cut(dfp['Age'], bins=bins, labels=labels, right=True)
+    dfp['Age'] = dfp['Age'].map(mapping)
 
     return dfp
 
@@ -212,41 +232,12 @@ def binario_para_genero():
     return dfp
 
 
-def bar_two():
-    st.markdown('<h3>Gráfico de Barras </h3>', unsafe_allow_html=True)
-
-    col1,col2=st.columns([.3,.7])
-
-    with col1:
-
-        colunas_binarias = ['HighBP', 'HighChol', 'CholCheck', 'Smoker', 'Stroke', 'PhysActivity',
-                            'Fruits', 'Veggies', 'HvyAlcoholConsump', 'AnyHealthcare', 'NoDocbcCost', 'DiffWalk']
-        
-        coluna = st.selectbox("Selecione uma coluna binária para visualização:",
-                            options=colunas_binarias)
-
-        if coluna:
-            agrupando_por_sexo = dfp.groupby('Sex')[coluna].value_counts().to_frame().reset_index()
-            agrupando_por_sexo.columns = ['Sexo', coluna, 'Total']
-            
-            fig = px.histogram(agrupando_por_sexo, x='Sexo', y='Total',
-                            color=coluna, barmode='group',
-                            color_discrete_map={0: 'lightgray', 1: 'royalblue'},
-                            labels={'Total': 'Número de Pessoas', coluna: coluna},
-                            height=500)
-        else:
-            st.warning("Por favor, selecione uma coluna binária para visualização.")
-    with col2:
-         col2.plotly_chart(fig, use_container_width=True)
-
-
 def buildPage():
     dataDict()
     profilling()
     parallel_cateogries()
     histograms()
     boxplot()
-    bar_two()
     
 if __name__ == '__main__':
     buildPage()
