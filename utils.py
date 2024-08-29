@@ -80,14 +80,19 @@ def _transformGenHealth(df) -> pd.DataFrame:
     df['GenHlth'] = df['GenHlth'].replace(genHealth)  
 
 def removeOutliersFromDf(df) -> pd.DataFrame:
-    Q1 = df['BMI'].quantile(0.25)
-    Q3 = df['BMI'].quantile(0.75)
-    IQR = Q3 - Q1
+    outliersToRemove = ['BMI', 'MentHlth', 'PhysHlth', 'Age']
+    df_cleaned = df.copy()
 
-    # Definir limites para detectar outliers
-    lower_bound = Q1 - 1.0 * IQR
-    upper_bound = Q3 + 1.0 * IQR
+    for col in outliersToRemove:
+        Q1 = df_cleaned[col].quantile(0.25)
+        Q3 = df_cleaned[col].quantile(0.75)
+        IQR = Q3 - Q1
 
-# Remover outliers
-    df_cleaned = df[~((df['BMI'] < lower_bound) | (df['BMI'] > upper_bound))]
+        # Definir limites para detectar outliers
+        lower_bound = Q1 - 0.70 * IQR
+        upper_bound = Q3 + 0.70 * IQR
+
+        # Remover outliers
+        df_cleaned = df_cleaned[~((df_cleaned[col] < lower_bound) | (df_cleaned[col] > upper_bound))]
+        
     return df_cleaned
