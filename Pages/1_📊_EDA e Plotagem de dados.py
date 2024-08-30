@@ -231,6 +231,11 @@ def binario_para_genero(dfp):
 
     return dfp
 
+def violin():
+    st.subheader("Gráfico de Violino")
+    cols = ['Diabetes', 'GenHlth', 'Education', 'MentHlth', 'Income',]
+    selectedColumn = st.selectbox('Escolha a variável para o gráfico de violino:', options=cols)
+    st.plotly_chart(px.violin(dfp, x="HeartDiseaseorAttack", y=selectedColumn, box=True))
 
 def buildPage():
     dataDict()
@@ -238,6 +243,7 @@ def buildPage():
     parallel_cateogries()
     histograms()
     boxplot()
+    violin()
     
 if __name__ == '__main__':
     buildPage()
