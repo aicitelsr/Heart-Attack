@@ -16,7 +16,8 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.decomposition import PCA
 
-st.title('Agrupamento KModes e KMeans')
+st.title('Clusterização (Agrupamento)')
+st.subheader('k-means e k-modes')
 
 dfp = transformData(readDataframe_parquet())
 dfp2= transformData2(readDataframe_parquet())
@@ -116,7 +117,7 @@ def grafico1():
     with col1:
         
         if button_input:
-            st.subheader('Histrograma 1')
+            st.subheader('Histograma 1')
             fig = px.histogram(dfp_c_labels, x=colunas, color='Clusters', 
                                 title=f'Distribuição de {colunas} por Cluster(KModes)',
                                 
@@ -127,7 +128,7 @@ def grafico1():
         with col2:
             
             if button_input:
-                st.subheader('Histrograma 2')
+                st.subheader('Histograma 2')
                 fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
                                     title=f'Distribuição de {colunas} por Cluster(KMeans)',
                                     
@@ -170,12 +171,12 @@ def matrix():
             st.write('Matriz 2')
             st.pyplot(plt)
 matrix()
-def disperssao():
-    st.subheader('Gráficos de Disperssão Apenas de Hábitos e Características dos Individuos')
+def dispersao():
+    st.subheader('Gráficos de Dispersão Apenas de Hábitos e Características dos Individuos')
     col1,col2= st.columns([1.2,0.8])
     cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
     with col1:
-        st.write('Gráficos de Disperssão dos Clusters com PCA(KModes)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA(KModes)')
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_c)
 
@@ -199,7 +200,7 @@ def disperssao():
       
         st.plotly_chart(fig)
     with col2:
-        st.write('Gráficos de Disperssão dos Clusters com PCA(KMeans)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA(KMeans)')
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_c2)
 
@@ -222,9 +223,9 @@ def disperssao():
 
         
         st.plotly_chart(fig)
-disperssao()
-def disperssao_all(df):
-    st.subheader('Gráficos de Disperssão com Mais Varáveis')
+dispersao()
+def dispersao_all(df):
+    st.subheader('Gráficos de Dispersão com Mais Variáveis')
     cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
     with st.expander('Colunas Não Utilizadas'):
         st.write('Todas as colunas foram utlizadas exceto:[HeartDiseaseorAttack,Income_10000-14000, Income_15000-19999, Income_20000-24999,Income_25000-34999, Income_35000-49999, Income_50000-74999,Income_75000 ou mais, Income_Menos de 10000,Education_College 1-3, Education_College 4 ou mais,Education_Grades 1-8, Education_Grades 12 ou GED]')
@@ -258,7 +259,7 @@ def disperssao_all(df):
     col1,col2= st.columns(2)
 
     with col1:
-        st.write('Gráficos de Disperssão dos Clusters com PCA(KModes)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA(KModes)')
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_kmodes)
 
@@ -282,7 +283,7 @@ def disperssao_all(df):
       
         st.plotly_chart(fig)
     with col2:
-        st.write('Gráficos de Disperssão dos Clusters com PCA(KMeans)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA(KMeans)')
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_kmeans)
 
@@ -305,7 +306,7 @@ def disperssao_all(df):
 
         
         st.plotly_chart(fig)
-disperssao_all(dfp)
+dispersao_all(dfp)
 
 
 def mapa_calor(df1,df2):
