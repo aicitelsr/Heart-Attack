@@ -2,7 +2,7 @@ import streamlit as st
 from streamlit.components.v1 import html
 import pandas as pd
 import plotly.express as px
-from utils import readDataframe_csv
+from utils import readDataframe_csv, transformRawDf
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
 
@@ -232,10 +232,12 @@ def binario_para_genero(dfp):
     return dfp
 
 def violin():
+    # Ajustando exibição dos dados
+    transformRawDf(dfp)
     st.subheader("Gráfico de Violino")
-    cols = ['Diabetes', 'GenHlth', 'Education', 'MentHlth', 'Income',]
+    cols = ['Diabético', 'Saúde geral', 'Formação', 'Saúde mental', 'Renda']
     selectedColumn = st.selectbox('Escolha a variável para o gráfico de violino:', options=cols)
-    st.plotly_chart(px.violin(dfp, x="HeartDiseaseorAttack", y=selectedColumn, box=True))
+    st.plotly_chart(px.violin(dfp, x="Problemas cardíacos", y=selectedColumn, title=f'Distribuíção de {selectedColumn} por Doença Cardíaca',box=True))
 
 def buildPage():
     dataDict()

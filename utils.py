@@ -96,3 +96,79 @@ def removeOutliersFromDf(df) -> pd.DataFrame:
         df_cleaned = df_cleaned[~((df_cleaned[col] < lower_bound) | (df_cleaned[col] > upper_bound))]
         
     return df_cleaned
+
+def transformRawDf(df) -> pd.DataFrame:
+    problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
+    df['HeartDiseaseorAttack'] = df['HeartDiseaseorAttack'].replace(problema)
+
+    fumante = {0:'Não Fumante',1:'Fumante'}
+    df['Smoker'] = df['Smoker'].replace(fumante)
+    
+    atividade_f={0:'Não Pratica Ativades Físicas',1:'Pratica Atividades Físicas'}
+    df['PhysActivity'] = df['PhysActivity'].replace(atividade_f)
+
+    sexo = {0:'Mulher',1:'Homem'}
+    df['Sex'] = df['Sex'].replace(sexo)
+
+    saude= {1:'Ruim', 2:'Razoável', 3:'Boa', 4:'Muito boa', 5:'Excelente'}
+    df['GenHlth']=df['GenHlth'].replace(saude)
+
+    frutas = {0:'Não Consomem Frutas',1:'Consomem Frutas'}
+    df['Fruits'] = df['Fruits'].replace(frutas)
+
+    legumes= {0:'Não Consomem Legumes ou Verduras', 1:'Consomem Legumes ou Verduras'}
+    df['Veggies'] = df['Veggies'].replace(legumes)
+
+    pressaoAlta = {0: 'Não possui pressão alta', 1: 'Possui pressão alta'}
+    df['HighBP'] = df['HighBP'].replace(pressaoAlta)
+
+    colesterolAlto = {0: 'Não possui colesteral alto', 1: 'Possui colesteral alto'}
+    df['HighChol'] = df['HighChol'].replace(colesterolAlto)
+
+    checagemColesterol = {0: 'Não fez checagem de Colesterol', 1: 'Fez checagem de Colesterol'}
+    df['CholCheck'] = df['CholCheck'].replace(colesterolAlto)
+
+    avc = {0: 'Nunca teve um AVC', 1: 'Já teve um AVC'}
+    df['Stroke'] = df['Stroke'].replace(avc)
+
+    altoConsumoDeAlcool = {0: 'Baixo consumo de álcool', 1: 'Alto consumo de álcool'}
+    df['HvyAlcoholConsump'] = df['HvyAlcoholConsump'].replace(altoConsumoDeAlcool)
+
+    planoSaude = {0: 'Não possui plano de saúde', 1: 'Possui plano de saúde'}
+    df['AnyHealthcare'] = df['AnyHealthcare'].replace(planoSaude)
+
+    medicoCusto = {0: 'Não visitou', 1: 'Visitou'}
+    df['NoDocbcCost'] = df['NoDocbcCost'].replace(medicoCusto)
+
+    dificuldadeAndar = {0: 'Não possui dificuldade de andar', 1: 'Possui dificuldade de andar'}
+    df['DiffWalk'] = df['DiffWalk'].replace(dificuldadeAndar)
+
+    diabetico = {0: 'Não possui um histórico de diabetes', 1: 'Pré-diabético', 2: 'Sofre de algum tipo de diabete'}
+    df['Diabetes'] = df['Diabetes'].replace(diabetico)
+
+    df.rename(columns={
+    'Smoker': 'Fumantes',
+    'Age': 'Idade',
+    'HeartDiseaseorAttack':'Problemas cardíacos',
+    'PhysActivity': "Atividade física",
+    'Sex': 'Sexo',
+    'GenHlth': 'Saúde geral',
+    'Fruits': 'Consumo de frutas',
+    'Veggies': 'Consumo de legumes e verduras',
+    'HighBP': 'Pressão alta',
+    'HighChol': 'Colesterol alto',
+    'BMI': 'IMC - Índice de Massa Corporal',
+    'CholCheck': 'Checagem de Colesterol',
+    'Stroke': 'AVC',
+    'HvyAlcoholConsump': 'Alto Consumo de álcool',
+    'AnyHealthcare': 'Plano de saúde',
+    'NoDocbcCost': 'Não visitou médico por custo',
+    'MentHlth': 'Saúde mental',
+    'PhysHlth': 'Saúde física',
+    'DiffWalk': 'Dificuldade de andar',
+    'Income': 'Renda',
+    'Education': 'Formação',
+    'Diabetes': 'Diabético'
+    }, inplace=True)
+    
+    return df
