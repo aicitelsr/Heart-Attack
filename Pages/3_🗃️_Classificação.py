@@ -8,6 +8,7 @@ from scipy.stats import randint
 from sklearn.metrics import classification_report
 from catboost import CatBoostClassifier
 from sklearn.linear_model import LogisticRegression
+import pickle
 
 # Tree Visualisation
 from sklearn.tree import export_graphviz
@@ -76,8 +77,9 @@ def _randomForest(x_train, y_train, x_test, y_test):
     return report_train, report_test, fig
 
 def _regressaoLogistica(x_train, y_train, x_test, y_test):
-    logistica = LogisticRegression(random_state=1, max_iter=200, penalty='l2', tol=0.0001, C=1, solver='lbfgs')
-    logistica.fit(x_train, y_train)
+    # Carregar o modelo com pickle
+    with open('Models/regressao2_model.pkl', 'rb') as f:
+        logistica = pickle.load(f)
 
     pred_train = logistica.predict(x_train)
     pred_test = logistica.predict(x_test)
@@ -89,8 +91,8 @@ def _regressaoLogistica(x_train, y_train, x_test, y_test):
     coef = logistica.coef_[0]  # Coeficientes do modelo
     feature_importances = pd.Series(coef, index=x_train.columns).sort_values(ascending=False)
 
-    
-    
+    fig, ax = plt.subplots()
+    feature_importances.plot.barh(ax=ax)
     fig, ax = plt.subplots(figsize=(10, 8))  # Aumenta o tamanho da figura
 
     # Plota a importância das características
