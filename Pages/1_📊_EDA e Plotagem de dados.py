@@ -2,7 +2,6 @@ import streamlit as st
 from streamlit.components.v1 import html
 import pandas as pd
 import plotly.express as px
-from streamlit.components.v1 import html
 from utils import readDataframe_csv
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
@@ -15,7 +14,8 @@ df_cleaned = removeOutliersFromDf(dfp)
 
 st.title('Análise exploratória dos dados e Plotagens')
 
-custom_colors = ['#64b59b', '#b7d2b6', '#f0f1ea', '#e6ce9a', '#f49d5b']
+custom_colors = ['#636efa', '#4e51d4', '#3936ae', '#211b8a', '#000068']
+selected_colors = [custom_colors[0], custom_colors[-2]]
 
 def dataDict():
      st.subheader("Dicionário de Dados")
@@ -111,9 +111,9 @@ def parallel_cateogries():
             st.error('Deve haver no mínimo duas colunas', icon='🚨')   
  
 def histograms():
-    binario_para_sim_nao()
-    binario_para_genero()
-    idade()
+    binario_para_sim_nao(dfp)
+    binario_para_genero(dfp)
+    idade(dfp)
 
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
@@ -126,8 +126,6 @@ def histograms():
           colunas=col1.selectbox('Colunas', options=nomes_colunas, key='histograma')
 
     with col2:
-        
-        selected_colors = [custom_colors[0], custom_colors[-1]]
 
         if colunas == 'Age':
 
@@ -140,68 +138,70 @@ def histograms():
 
             dfp.sort_values('Age', inplace=True)
 
-        st.write("Categorias ordenadas na coluna 'Age':")
-        st.write(dfp['Age'])
-
         grafico= px.histogram(dfp, x=colunas, color='HeartDiseaseorAttack', color_discrete_sequence=selected_colors)
         grafico.update_layout(bargap=0.1)
         col2.plotly_chart(grafico, use_container_width=True)
 
 def boxplot():
-    binario_para_sim_nao()
-    binario_para_genero()
+    binario_para_sim_nao(df_cleaned)
+    binario_para_genero(df_cleaned)
+    idade(df_cleaned)
 
-    st.subheader("Boxplot")
-    st.subheader("Filtros")
+    st.subheader("Gráfico de Boxplot")
 
     col1, col2 = st.columns([0.3, 0.7])
 
     with st.container():
-        variaveis = ['BMI', 'MentHlth, PhysHlth']   
+        variaveis = ['BMI', 'MentHlth', 'PhysHlth']   
         escolha_variavel = st.selectbox('Escolha a Variável para o Boxplot:', options=variaveis)
 
-        filtros_ativados = escolha_variavel != 'Nenhum'
+        filtro_col1, filtro_col2 = st.columns([0.5, 0.5])
+        with filtro_col1:
+            filtro = st.radio("Filtrar por: ", options=['Nenhum', 'Idade', 'Sexo'])
+        with filtro_col2:
+            remove_outliers = st.radio('Remover outliers: ', options=['Sim', 'Não'], index=1)
 
-        filtro_idade = st.checkbox('Filtrar por Idade', disabled=not filtros_ativados)
-        filtro_sexo = st.checkbox('Filtrar por Sexo', disabled=not filtros_ativados)
-        filtro_nenhum = st.checkbox("Nenhum")
-
-        # Checkbox para selecionar o DataFrame
-        show_outliers = st.checkbox('Remover outliers', value=False)
-        selected_df = df_cleaned if show_outliers else dfp
-
+        selected_df = df_cleaned if remove_outliers == 'Sim' else dfp
+            
         grafico = None 
 
         if escolha_variavel == 'BMI':
-            if filtro_idade:
-                grafico = px.box(selected_df, x='Age', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por idade e Doença Cardíaca', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(selected_df['Age'].unique())})
-            elif filtro_sexo:
-                grafico = px.box(selected_df, x='Sex', y='BMI', color='HeartDiseaseorAttack', title=f'Boxplot de IMC por sexo e Doença Cardíaca', color_discrete_sequence=custom_colors)
+            if filtro == 'Idade':
+              grafico = px.box(selected_df, x='Age', y='BMI', color='HeartDiseaseorAttack', 
+                                 title='Boxplot de IMC por idade e Doença Cardíaca', 
+                                 color_discrete_sequence=selected_colors, 
+                                 category_orders={'Age': sorted(selected_df['Age'].unique())})
+            elif filtro == 'Sexo':
+                grafico = px.box(selected_df, x='Sex', y='BMI', color='HeartDiseaseorAttack', 
+                                 title='Boxplot de IMC por sexo e Doença Cardíaca', 
+                                 color_discrete_sequence=selected_colors)
             else:
-                grafico = px.box(selected_df, y='BMI', color='HeartDiseaseorAttack', title='Boxplot de IMC por Doença Cardíaca', color_discrete_sequence=custom_colors)
-        elif escolha_variavel == 'MentHlth, PhysHlth':
-            variaveis_para_plotar = ['MentHlth', 'PhysHlth']
-
-            df_melted = selected_df.melt(id_vars=['HeartDiseaseorAttack'], value_vars=variaveis_para_plotar, var_name='Variável', value_name='Valor')
-
-            if filtro_idade:
-                df_melted['Age'] = selected_df['Age']
-                
-                grafico = px.box(df_melted, x='Age', y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, category_orders={'Age': sorted(selected_df['Age'].unique())}, title='Boxplot de Saúde Mental e Física por Idade')
-            elif filtro_sexo:
-                df_melted['Sex'] = selected_df['Sex']
-
-                grafico = px.box(df_melted, x='Sex', y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, title='Boxplot de Saúde Mental e Física por Sexo')
+               grafico = px.box(selected_df, y='BMI', color='HeartDiseaseorAttack', 
+                                 title='Boxplot de IMC por Doença Cardíaca', 
+                                 color_discrete_sequence=selected_colors)
+               
+        elif escolha_variavel in ['MentHlth', 'PhysHlth']:
+            if filtro == 'Idade': 
+                 grafico = px.box(selected_df, x='Age', y=escolha_variavel, color='HeartDiseaseorAttack', 
+                                 title=f'Boxplot de {escolha_variavel} por Idade e Doença Cardíaca', 
+                                 color_discrete_sequence= selected_colors, 
+                                 category_orders={'Age': sorted(selected_df['Age'].unique())})
+            elif filtro == 'Sexo':
+              grafico = px.box(selected_df, x='Sex', y=escolha_variavel, color='HeartDiseaseorAttack', 
+                                 title=f'Boxplot de {escolha_variavel} por Sexo e Doença Cardíaca', 
+                                 color_discrete_sequence=selected_colors,
+                                 category_orders={'Sex': sorted(selected_df['Sex'].unique())})
             else:
-                
-                grafico = px.box(df_melted, y='Valor', color='HeartDiseaseorAttack', facet_col='Variável', color_discrete_sequence=custom_colors, title='Boxplot de Saúde Mental e Física')
-                 
+                grafico = px.box(selected_df, y=escolha_variavel, color='HeartDiseaseorAttack', 
+                                 title=f'Boxplot de {escolha_variavel} por Doença Cardíaca', 
+                                 color_discrete_sequence=selected_colors)
+                             
         if grafico is not None:
                 st.plotly_chart(grafico, use_container_width=True)
         else:
-            st.warning('Selecione uma variável e aplique um filtro para visualizar o gráfico.')
+            st.warning('Selecione uma variável e um filtro para visualizar o gráfico.')
 
-def idade():
+def idade(dfp):
     mapping = {
         1: '18-24', 2: '25-29', 3: '30-34', 4: '35-39', 5: '40-44',
         6: '45-49', 7: '50-54', 8: '55-59', 9: '60-64', 10: '65-69',
@@ -212,7 +212,7 @@ def idade():
 
     return dfp
 
-def binario_para_sim_nao():
+def binario_para_sim_nao(dfp):
     colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
 
     mapeamento = {0: 'Não', 1: 'Sim'}
@@ -223,7 +223,7 @@ def binario_para_sim_nao():
     return dfp
 
 
-def binario_para_genero():
+def binario_para_genero(dfp):
 
     mapeamento = {0: 'Feminino', 1: 'Masculino'}
 
