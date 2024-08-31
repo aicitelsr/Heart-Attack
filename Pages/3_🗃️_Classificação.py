@@ -1,3 +1,4 @@
+from functools import partial
 from graphviz import Source
 import joblib
 from sklearn.model_selection import train_test_split
@@ -44,7 +45,7 @@ def _showReport(report):
         df_results['support'].append(support)
 
     df_results = pd.DataFrame(df_results)
-    df_results.style.format({'precision': '{:.2%}', 'recall': '{:.2%}', 'f1-score': '{:.2%}', 'support': '{:.0f}'})
+    df_results.style.format({'precision': '{:.2f}', 'recall': '{:.2f}', 'f1-score': '{:.2f}', 'support': '{:.0f}'})
     st.write(f'''
                 <b>Accuracy: {accuracy:.4%}</b><br/>
                 Support: {support:.0f}
@@ -111,9 +112,6 @@ def _regressaoLogistica(x_train, y_train, x_test, y_test):
         
     return report_train, report_test, fig
 
-
-    
-
 def _catBoost(x_train, y_train, x_test, y_test):
     cb = joblib.load('./Models/catboost_model.pkl.gz')
 
@@ -152,32 +150,48 @@ def _catBoost(x_train, y_train, x_test, y_test):
 
 #     # Exibir a matriz de confusão no Streamlit
 #     st.pyplot(fig)
+def create_classifier_dict(x_train, y_train, x_test, y_test):
+    classifiers = {
+        'Random Forest': partial(_randomForest, x_train, y_train, x_test, y_test),
+        'CatBoost': partial(_catBoost, x_train, y_train, x_test, y_test),
+        'Regressão Logística': partial(_regressaoLogistica, x_train, y_train, x_test, y_test)
+    }
+    
+    return classifiers
 
 def buildPage():
+    isBalanced = False
+    rawDf = transformData(readDataframe_parquet())
+    balancedDf = pd.read_parquet('./data/heart_disease_resampled.parquet')
+
+    df = balancedDf if isBalanced else rawDf
+
+    classifiers = ['Random Forest', 'CatBoost', 'Regressão Logística']    
+
+    df_target = df['HeartDiseaseorAttack']
     st.title('Classificação')
     
-    dfp = transformData(readDataframe_parquet())
-
-    # Dropando variáveis que podem não ser útil para a classificação (+ variável target)
-    dfp_target = dfp['HeartDiseaseorAttack']
-    dfp= dfp.drop(['HeartDiseaseorAttack','Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'MentHlth', 'PhysHlth'], axis=1)
-
-    # Divisão entre treino e teste
-    x_train, x_test, y_train, y_test = train_test_split(dfp, dfp_target, test_size=0.2, random_state=42)
-
-    classfiers = {
-        'Random Forest': lambda: _randomForest(x_train, y_train, x_test, y_test),
-        'CatBoost': lambda: _catBoost(x_train, y_train, x_test, y_test),
-        'Regressão Logística': lambda: _regressaoLogistica(x_train, y_train, x_test, y_test),
-        'KDD': None,
-    }
-
     st.subheader('Escolha um modelo de Classificação:')
-    classfier = st.selectbox(label='Escolha o modelo', options=classfiers.keys())
+    left, right = st.columns([3, 1], vertical_alignment='bottom')
+
+    with left:
+        classifier = st.selectbox(label='Escolha o modelo', options=classifiers)
+    
+    with right:
+        isBalanced = st.checkbox(label='Balancear dataset')
+
     confirmButton = st.button('Classificar')
 
     if confirmButton:
-        report_train, report_test, fig = classfiers[classfier]()
+        #  Dropando variaveis
+        df = df.drop(['HeartDiseaseorAttack','Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'MentHlth', 'PhysHlth'], axis=1)
+
+        # Divisão entre treino e teste
+        x_train, x_test, y_train, y_test = train_test_split(df, df_target, test_size=0.2, random_state=42)
+
+        # Seleção do Classificador
+        classifier_dict = create_classifier_dict(x_train, y_train, x_test, y_test)
+        report_train, report_test, fig = classifier_dict[classifier]()
 
         c1, _, c2, c3 = st.columns([.49, .02, .49, 0.1]) 
     
@@ -194,6 +208,8 @@ def buildPage():
         # Features importance
         st.subheader('Feature importance do Modelo:')
         st.pyplot(fig)
+
+    # st.write(df_target.value_counts())
 
 if __name__ == '__main__':
     buildPage()
