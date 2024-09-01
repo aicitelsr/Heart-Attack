@@ -16,39 +16,56 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.decomposition import PCA
 
-st.title('Clusterização (Agrupamento)')
-st.subheader('k-means e k-modes')
+st.title('Clusterização K-means e K-modes')
+
 
 dfp = transformData(readDataframe_parquet())
 dfp2= transformData2(readDataframe_parquet())
 
-dfp_c= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
-       'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
-       'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
-       'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
-       'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
 
-#kmodes
-with open('Models\kmodes_modelo.pkl', 'rb') as file:
-    kmodes = pickle.load(file)
 
-clusters = kmodes.predict(dfp_c)
-dfp_c.loc[:,'Clusters'] = clusters
-dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
+@st.cache_data
+def load_and_predict_kmodes():
+    dfp_kmodes = transformData(readDataframe_parquet())
+    dfp_c = dfp_kmodes[['Smoker', 'PhysActivity', 'Sex', 'GenHlth_Boa', 
+                 'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
+                 'GenHlth_Ruim', 'Age_18-24', 'Age_25-29', 'Age_30-34', 
+                 'Age_35-39', 'Age_40-44', 'Age_45-49', 'Age_50-54', 
+                 'Age_55-59', 'Age_60-64', 'Age_65-69', 'Age_70-74', 
+                 'Age_75-79', 'Age_Mais de 80', 'Fruits', 'Veggies']].copy()
 
-#kmeans
-with open('Models\kmeans_modelo.pkl', 'rb') as file:
-    kmeans = pickle.load(file)
+    with open('Models/kmodes_modelo.pkl', 'rb') as file:
+        kmodes = pickle.load(file)
 
-dfp_c2= dfp[['Smoker','PhysActivity','Sex','GenHlth_Boa',
-       'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
-       'GenHlth_Ruim','Age_18-24', 'Age_25-29', 'Age_30-34', 'Age_35-39',
-       'Age_40-44', 'Age_45-49', 'Age_50-54', 'Age_55-59', 'Age_60-64',
-       'Age_65-69', 'Age_70-74', 'Age_75-79', 'Age_Mais de 80','Fruits', 'Veggies']].copy()
+    clusters = kmodes.predict(dfp_c)
+    dfp_c['Clusters'] = clusters
+    dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
+    
+    return dfp_c
 
-clusters2= kmeans.predict(dfp_c2)
-dfp_c2['Clusters'] = clusters2
-dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
+@st.cache_data
+def load_and_predict_kmeans():
+    dfp_kmeans = transformData(readDataframe_parquet())
+    dfp_c2 = dfp_kmeans[['Smoker', 'PhysActivity', 'Sex', 'GenHlth_Boa', 
+                  'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre', 
+                  'GenHlth_Ruim', 'Age_18-24', 'Age_25-29', 'Age_30-34', 
+                  'Age_35-39', 'Age_40-44', 'Age_45-49', 'Age_50-54', 
+                  'Age_55-59', 'Age_60-64', 'Age_65-69', 'Age_70-74', 
+                  'Age_75-79', 'Age_Mais de 80', 'Fruits', 'Veggies']].copy()
+
+    with open('Models/kmeans_modelo.pkl', 'rb') as file:
+        kmeans = pickle.load(file)
+
+    clusters2 = kmeans.predict(dfp_c2)
+    dfp_c2['Clusters'] = clusters2
+    dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
+    
+    return dfp_c2
+
+dfp_c= load_and_predict_kmodes()
+dfp_c2= load_and_predict_kmeans()
+
+
 
 def labels(df):
     problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
@@ -111,13 +128,13 @@ def grafico1():
     nome_colunas= ['Problemas Cardíacos','Fumantes',"Pratica Atividade Física",'Sexo','Saúde Boa','Saúde Excelente','Saúde Moderada','Saúde Probre',
                     'Saúde Ruim','Consumo de Frutas','Consumo de Legumes e Verduras']
     colunas=st.selectbox('Colunas', options=nome_colunas, key='histograma')
-    col1,col2 = st.columns([0.6,0.4])
+    col1,col2 = st.columns(2)
     cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
     button_input = st.button('Gerar Gráfico')
     with col1:
         
         if button_input:
-            st.subheader('Histograma 1')
+            st.subheader('Histograma 1 KModes')
             fig = px.histogram(dfp_c_labels, x=colunas, color='Clusters', 
                                 title=f'Distribuição de {colunas} por Cluster(KModes)',
                                 
@@ -128,7 +145,7 @@ def grafico1():
         with col2:
             
             if button_input:
-                st.subheader('Histograma 2')
+                st.subheader('Histograma 2 KMeans')
                 fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
                                     title=f'Distribuição de {colunas} por Cluster(KMeans)',
                                     
@@ -172,6 +189,7 @@ def matrix():
             st.pyplot(plt)
 matrix()
 def dispersao():
+    clusters = dfp_c['Clusters']
     st.subheader('Gráficos de Dispersão Apenas de Hábitos e Características dos Individuos')
     col1,col2= st.columns([1.2,0.8])
     cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
@@ -200,6 +218,7 @@ def dispersao():
       
         st.plotly_chart(fig)
     with col2:
+        clusters2= dfp_c2['Clusters']
         st.write('Gráficos de Dispersão dos Clusters com PCA(KMeans)')
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_c2)
@@ -277,8 +296,8 @@ def dispersao_all(df):
 
        
         fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='PCA Component 1',
-                        yaxis_title='PCA Component 2')
+                        xaxis_title='Componente Principal 1',
+                        yaxis_title='Componente Principal 2')
 
       
         st.plotly_chart(fig)
@@ -301,8 +320,8 @@ def dispersao_all(df):
 
         
         fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='PCA Component 1',
-                        yaxis_title='PCA Component 2')
+                        xaxis_title='Componente Principal 1',
+                        yaxis_title='Componente Principal 2')
 
         
         st.plotly_chart(fig)

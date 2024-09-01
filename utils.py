@@ -146,6 +146,9 @@ def transformRawDf(df) -> pd.DataFrame:
     diabetico = {0: 'Não possui um histórico de diabetes', 1: 'Pré-diabético', 2: 'Sofre de algum tipo de diabete'}
     df['Diabetes'] = df['Diabetes'].replace(diabetico)
 
+    df['BMI'] = df['BMI'].apply(_categorizeBMI)
+    age = {1:'18-24',2:'25-29',3:'30-34',4:'35-39',5:'40-44',6:'45-49',7:'50-54',8:'55-59',9:'60-64',10:'65-69',11:'70-74',12:'75-79', 13:'Mais de 80'}
+    df['Age']= df['Age'].replace(age)
     df.rename(columns={
     'Smoker': 'Fumantes',
     'Age': 'Idade',

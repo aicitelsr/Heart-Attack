@@ -5,7 +5,7 @@ import plotly.express as px
 from utils import readDataframe_csv, transformRawDf
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
-
+from utils import transformRawDf
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
 df_cleaned = removeOutliersFromDf(dfp)
@@ -80,65 +80,54 @@ def profilling():
      st.subheader("Data Profilling")
      with st.expander('Proffiling De Dados'):
             
-             # Carregar o conteúdo do arquivo HTML
+             
          with open("data/eda.html", "r") as file:
                  pagina_html = file.read()
 
-                 # Exibir o conteúdo HTML
+                 
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
 
 def parallel_cateogries():
-
+    dfp_labels= transformRawDf(dfp.copy())
+    dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
     st.subheader('Gráfico de Categorias Paralelas')
+    with st.expander('Cor'):
+         st.write('Cor=1 para SIM e Cor=0 para Não')
     col1,col2=st.columns([.3,.7])
     with col1:
-        nomes_colunas=['HeartDiseaseorAttack','HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
-                        'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
-        colunas = col1.multiselect('Colunas (máximo 5)', options=nomes_colunas, default=['HeartDiseaseorAttack'])
+        nomes_colunas=dfp_labels.columns
+        
+        colunas = col1.multiselect('Colunas (máximo 3)', options=nomes_colunas, max_selections=3)
+       
+        button_input = st.button('Gerar Gráfico', disabled=(len(colunas) <=1))
 
-        button_input = st.button('Gerar Gráfico', disabled=(len(colunas) < 2 or len(colunas) > 5))
-
-        if len(colunas) > 5:
-            st.error('Selecione no máximo 5 colunas.', icon='🚨')
+        if len(colunas) > 3:
+            st.error('Selecione no máximo 3 colunas.', icon='🚨')
         elif len(colunas) >=2 and button_input:
                         with col2:
-                                grafico= px.parallel_categories(dfp[colunas], color='HeartDiseaseorAttack', color_continuous_scale=custom_colors)
+                                grafico= px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Cor'])
 
-                                grafico.update_layout(coloraxis_showscale=False)
+                                grafico.update_layout(coloraxis_showscale=False,margin=dict(l=100, r=0, t=0, b=25))
 
                                 col2.plotly_chart(grafico, use_container_width=True)         
         elif len(colunas) < 2:
             st.error('Deve haver no mínimo duas colunas', icon='🚨')   
  
 def histograms():
-    binario_para_sim_nao(dfp)
-    binario_para_genero(dfp)
-    idade(dfp)
+    dfp_labels= transformRawDf(dfp.copy())
 
     st.subheader('Histograma')
     col1,col2=st.columns([.3,.7])
 
     with col1:
           st.write("Selecione uma coluna para visualizar o histograma: ")
-          nomes_colunas=['HighBP','HighChol','CholCheck','BMI','Smoker','Stroke','Diabetes','PhysActivity','Fruits','Veggies','HvyAlcoholConsump',
-                        'AnyHealthcare','NoDocbcCost','GenHlth','MentHlth','PhysHlth','DiffWalk','Sex','Income','Age','Education']
+          nomes_colunas=dfp_labels.columns
           
           colunas=col1.selectbox('Colunas', options=nomes_colunas, key='histograma')
 
     with col2:
-
-        if colunas == 'Age':
-
-            dfp['Age'] = dfp['Age'].astype(str)
-
-            order = ['18-24', '25-29', '30-34', '35-39', '40-44', '45-49',
-              '50-54', '55-59', '60-64', '65-69', '70-74', '75-79', '80 ou mais']
-            
-            dfp['Age'] = pd.Categorical(dfp['Age'], categories=order, ordered=True)
-
-            dfp.sort_values('Age', inplace=True)
-
-        grafico= px.histogram(dfp, x=colunas, color='HeartDiseaseorAttack', color_discrete_sequence=selected_colors)
+        order = dfp_labels[colunas].value_counts().index.tolist()
+        grafico= px.histogram(dfp_labels, x=colunas, color='Problemas cardíacos', color_discrete_sequence=selected_colors, category_orders={colunas:order})
         grafico.update_layout(bargap=0.1)
         col2.plotly_chart(grafico, use_container_width=True)
 
