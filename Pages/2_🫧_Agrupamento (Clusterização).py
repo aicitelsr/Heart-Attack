@@ -264,13 +264,13 @@ def dispersao_all(df):
     dfp_kmodes=dfp_sem_colunas
     dfp_kmeans = dfp_sem_colunas2
 
-    with open('C:\VScode\Projetos3\Models\kmodes_modelo2.pkl', 'rb') as file:
+    with open('Models\kmodes_modelo2.pkl', 'rb') as file:
         kmodes = pickle.load(file)
     clusters = kmodes.predict(dfp_kmodes)
     dfp_kmodes.loc[:,'Clusters'] = clusters
 
     
-    with open('C:\VScode\Projetos3\Models\kmeans_modelo2.pkl','rb') as file:
+    with open('Models\kmeans_modelo2.pkl','rb') as file:
         kmeans = pickle.load(file)
     clusters2= kmeans.predict(dfp_kmeans)
     dfp_kmeans.loc[:,'Clusters'] = clusters2
