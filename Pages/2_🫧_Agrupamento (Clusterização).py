@@ -15,13 +15,12 @@ import pickle
 import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.decomposition import PCA
-
+from sklearn.metrics import davies_bouldin_score
 st.title('Clusterização K-means e K-modes')
 
 
 dfp = transformData(readDataframe_parquet())
 dfp2= transformData2(readDataframe_parquet())
-
 
 
 @st.cache_data
@@ -38,10 +37,11 @@ def load_and_predict_kmodes():
         kmodes = pickle.load(file)
 
     clusters = kmodes.predict(dfp_c)
+    db_score = davies_bouldin_score(dfp_c, clusters)
     dfp_c['Clusters'] = clusters
     dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
     
-    return dfp_c
+    return dfp_c,db_score
 
 @st.cache_data
 def load_and_predict_kmeans():
@@ -57,15 +57,14 @@ def load_and_predict_kmeans():
         kmeans = pickle.load(file)
 
     clusters2 = kmeans.predict(dfp_c2)
+    db_score2= davies_bouldin_score(dfp_c2, clusters2)
     dfp_c2['Clusters'] = clusters2
     dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
     
-    return dfp_c2
+    return dfp_c2,db_score2
 
-dfp_c= load_and_predict_kmodes()
-dfp_c2= load_and_predict_kmeans()
-
-
+dfp_c,db_score= load_and_predict_kmodes()
+dfp_c2,db_score2= load_and_predict_kmeans()
 
 def labels(df):
     problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
@@ -348,14 +347,13 @@ def mapa_calor(df1,df2):
         plt.title("Heatmap de Correlação entre Variáveis de Hábitos e Características dos Individuos")
         st.pyplot(plt)
 mapa_calor(dfp_c,dfp_c2)
-# # from sklearn.metrics import davies_bouldin_score
-
-# # db_score = davies_bouldin_score(dfp_c, clusters)
-# # print(f"Davies-Bouldin Index: {db_score}")
 
 
-# # db_score2 = davies_bouldin_score(dfp_c2, clusters)
-# # print(f"Davies-Bouldin Index: {db_score2}")
+# print(f"Davies-Bouldin Index(KModes): {db_score}")
+
+# print(f"Davies-Bouldin Index(KMeans): {db_score2}")
+
+
 
 
 
