@@ -4,14 +4,19 @@ import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
 from utils import readDataframe_parquet
-
+#from PIL import Image
 import matplotlib.pyplot as plt
 
 from sklearn.decomposition import PCA
 
 st.title('Clusterização K-means e K-modes')
 with st.expander('Notas'):
-    st.write('Através do método do cotovelo e silhueta foi definido que o melhor número de clusters é 3.')
+    st.write('Através do método do cotovelo e silhueta foi definido que o melhor número de clusters é 3.\nComo é possível observar há uma suavização da curva no valor de K=3, isso indica que a adição de mais clusters não terá uma melgoria significativa.')
+    col1,col2= st.columns(2)
+    with col1:
+        st.image('data\cotovelo_kmodes.png', caption='Cotovelo do KModes',use_column_width=True)
+    with col2:
+        st.image('data\cotovelo_kmeans.png', caption='Cotovelo do KMeans',use_column_width=True)
 dfp= readDataframe_parquet()
 dfp_c = pd.read_parquet('data\clusters_kmodes.parquet')
 dfp_c2= pd.read_parquet('data\clusters_kmeans.parquet')
