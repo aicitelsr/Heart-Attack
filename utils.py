@@ -107,7 +107,7 @@ def transformRawDf(df) -> pd.DataFrame:
     atividade_f={0:'Não Pratica Ativades Físicas',1:'Pratica Atividades Físicas'}
     df['PhysActivity'] = df['PhysActivity'].replace(atividade_f)
 
-    sexo = {0:'Mulher',1:'Homem'}
+    sexo = {0:'Feminino', 1:'Masculino'}
     df['Sex'] = df['Sex'].replace(sexo)
 
     saude= {1:'Ruim', 2:'Razoável', 3:'Boa', 4:'Muito boa', 5:'Excelente'}
