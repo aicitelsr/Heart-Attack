@@ -101,7 +101,8 @@ def grafico1():
             
             fig = px.histogram(dfp_c_labels, x=colunas, color='Clusters', 
                                title=f'Distribuição de {colunas} por Cluster (KModes)',
-                               color_discrete_map=cores_clusters)  
+                               color_discrete_map=cores_clusters,
+                               category_orders={'Clusters': ['Grupo 0', 'Grupo 1', 'Grupo 2']})  
             fig.update_layout(barmode='group',yaxis_title='Quantidade')
             fig.update_traces(texttemplate='%{y}', textposition='auto')
             st.plotly_chart(fig)
@@ -112,7 +113,8 @@ def grafico1():
             
             fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
                                title=f'Distribuição de {colunas} por Cluster (KMeans)',
-                               color_discrete_map=cores_clusters)  
+                               color_discrete_map=cores_clusters,
+                               category_orders={'Clusters': ['Grupo 0', 'Grupo 1', 'Grupo 2']})  
             fig.update_layout(barmode='group',yaxis_title='Quantidade')
             fig.update_traces(texttemplate='%{y}', textposition='auto')
             st.plotly_chart(fig)
@@ -140,8 +142,8 @@ def dispersao():
        
         fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
                         title='Clusters KModes visualizados em 2D usando PCA',
-                        
-                        color_discrete_map=cores_clusters)  
+                        color_discrete_map=cores_clusters,
+                        category_orders={'Clusters': ['Grupo 0', 'Grupo 1', 'Grupo 2']})  
         
         fig.update_layout(xaxis_title='PCA Componente 1',
                           yaxis_title='PCA Componente 2')
@@ -160,8 +162,8 @@ def dispersao():
        
         fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
                         title='Clusters KMeans visualizados em 2D usando PCA',
-                        
-                        color_discrete_map=cores_clusters)  
+                        color_discrete_map=cores_clusters,
+                        category_orders={'Clusters': ['Grupo 0', 'Grupo 1', 'Grupo 2']})  
         
         fig.update_layout(xaxis_title='PCA Componente 1',
                           yaxis_title='PCA Componente 2')
