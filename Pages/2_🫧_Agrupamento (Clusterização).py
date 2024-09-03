@@ -1,70 +1,23 @@
 import streamlit as st
 import pandas as pd
-from sklearn.cluster import KMeans
-import matplotlib.pyplot as pl
 import plotly.express as px
 import matplotlib.pyplot as plt
-from sklearn.metrics import silhouette_score
 import seaborn as sns
-import numpy as np
-from kmodes.kmodes import KModes
 from utils import readDataframe_parquet
-from utils import transformData
-from utils import transformData2
-import pickle 
+
 import matplotlib.pyplot as plt
-import seaborn as sn
+
 from sklearn.decomposition import PCA
-from sklearn.metrics import davies_bouldin_score
+
 st.title('Clusterização K-means e K-modes')
-
-
-dfp = transformData(readDataframe_parquet())
-dfp2= transformData2(readDataframe_parquet())
-
-
-@st.cache_data
-def load_and_predict_kmodes():
-    dfp_kmodes = transformData(readDataframe_parquet())
-    dfp_c = dfp_kmodes[['Smoker', 'PhysActivity', 'Sex', 'GenHlth_Boa', 
-                 'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre',
-                 'GenHlth_Ruim', 'Age_18-24', 'Age_25-29', 'Age_30-34', 
-                 'Age_35-39', 'Age_40-44', 'Age_45-49', 'Age_50-54', 
-                 'Age_55-59', 'Age_60-64', 'Age_65-69', 'Age_70-74', 
-                 'Age_75-79', 'Age_Mais de 80', 'Fruits', 'Veggies']].copy()
-
-    with open('Models/kmodes_modelo.pkl', 'rb') as file:
-        kmodes = pickle.load(file)
-
-    clusters = kmodes.predict(dfp_c)
-    db_score = davies_bouldin_score(dfp_c, clusters)
-    dfp_c['Clusters'] = clusters
-    dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
-    
-    return dfp_c,db_score
-
-@st.cache_data
-def load_and_predict_kmeans():
-    dfp_kmeans = transformData(readDataframe_parquet())
-    dfp_c2 = dfp_kmeans[['Smoker', 'PhysActivity', 'Sex', 'GenHlth_Boa', 
-                  'GenHlth_Execelente', 'GenHlth_Moderada', 'GenHlth_Pobre', 
-                  'GenHlth_Ruim', 'Age_18-24', 'Age_25-29', 'Age_30-34', 
-                  'Age_35-39', 'Age_40-44', 'Age_45-49', 'Age_50-54', 
-                  'Age_55-59', 'Age_60-64', 'Age_65-69', 'Age_70-74', 
-                  'Age_75-79', 'Age_Mais de 80', 'Fruits', 'Veggies']].copy()
-
-    with open('Models/kmeans_modelo.pkl', 'rb') as file:
-        kmeans = pickle.load(file)
-
-    clusters2 = kmeans.predict(dfp_c2)
-    db_score2= davies_bouldin_score(dfp_c2, clusters2)
-    dfp_c2['Clusters'] = clusters2
-    dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].copy()
-    
-    return dfp_c2,db_score2
-
-dfp_c,db_score= load_and_predict_kmodes()
-dfp_c2,db_score2= load_and_predict_kmeans()
+with st.expander('Notas'):
+    st.write('Através do método do cotovelo e silhueta foi definido que o melhor número de clusters é 3.')
+dfp= readDataframe_parquet()
+dfp_c = pd.read_parquet('data\clusters_kmodes.parquet')
+dfp_c2= pd.read_parquet('data\clusters_kmeans.parquet')
+dfp_c= dfp_c.rename(columns={'Cluster':'Clusters'})
+dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
+dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
 
 def labels(df):
     problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
@@ -117,214 +70,112 @@ def labels(df):
     }, inplace=True)
     return df
 
+dfp_mca = dfp[['HeartDiseaseorAttack','Smoker','PhysActivity','Sex','GenHlth','Fruits','Veggies']]
 dfp_c_labels=labels(dfp_c.copy())
 dfp_c2_labels= labels(dfp_c2.copy())
 
 def grafico1():
-    
     st.subheader('Histogramas Relacionados aos Clusters Apenas de Hábitos e Características dos Individuos')
 
-    nome_colunas= ['Problemas Cardíacos','Fumantes',"Pratica Atividade Física",'Sexo','Saúde Boa','Saúde Excelente','Saúde Moderada','Saúde Probre',
-                    'Saúde Ruim','Consumo de Frutas','Consumo de Legumes e Verduras']
-    colunas=st.selectbox('Colunas', options=nome_colunas, key='histograma')
-    col1,col2 = st.columns(2)
-    cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
+    
+    nome_colunas = ['Problemas Cardíacos', 'Fumantes', "Pratica Atividade Física", 'Sexo', 'Saúde Boa',
+                    'Saúde Excelente', 'Saúde Moderada', 'Saúde Probre', 'Saúde Ruim',
+                    'Consumo de Frutas', 'Consumo de Legumes e Verduras']
+
+   
+    colunas = st.selectbox('Colunas', options=nome_colunas, key='histograma')
+    
+    
+    col1, col2 = st.columns(2)
+    
+    
+    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4'}
+    
+   
     button_input = st.button('Gerar Gráfico')
-    with col1:
-        
-        if button_input:
+    
+    if button_input:
+        with col1:
             st.subheader('Histograma 1 KModes')
-            fig = px.histogram(dfp_c_labels, x=colunas, color='Clusters', 
-                                title=f'Distribuição de {colunas} por Cluster(KModes)',
-                                
-                                color_discrete_sequence=cores_clusters)
-            fig.update_layout(barmode='group')
-            fig.update_traces(texttemplate ='%{y}', textposition='auto')
-            st.plotly_chart(fig)
-        with col2:
             
-            if button_input:
-                st.subheader('Histograma 2 KMeans')
-                fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
-                                    title=f'Distribuição de {colunas} por Cluster(KMeans)',
-                                    
-                                    color_discrete_sequence=cores_clusters)
-                fig.update_layout(barmode='group')
-                fig.update_traces(texttemplate ='%{y}', textposition='auto')
-                st.plotly_chart(fig)  
+            
+            fig = px.histogram(dfp_c_labels, x=colunas, color='Clusters', 
+                               title=f'Distribuição de {colunas} por Cluster (KModes)',
+                               color_discrete_map=cores_clusters)  
+            fig.update_layout(barmode='group',yaxis_title='Quantidade')
+            fig.update_traces(texttemplate='%{y}', textposition='auto')
+            st.plotly_chart(fig)
+
+        with col2:
+            st.subheader('Histograma 2 KMeans')
+            order = dfp_c2_labels[colunas].value_counts().index.tolist()
+            
+            fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
+                               title=f'Distribuição de {colunas} por Cluster (KMeans)',
+                               color_discrete_map=cores_clusters)  
+            fig.update_layout(barmode='group',yaxis_title='Quantidade')
+            fig.update_traces(texttemplate='%{y}', textposition='auto')
+            st.plotly_chart(fig)
+ 
 grafico1()
 
-def matrix():
 
-    st.subheader('Matrizes de Confusão Relacionadas a Hábitos e Características dos Individuos')
-    nome_colunas=['Problemas Cardíacos','Fumantes',"Pratica Atividade Física",'Sexo','Saúde Boa','Saúde Excelente','Saúde Moderada','Saúde Probre',
-                    'Saúde Ruim','Consumo de Frutas','Consumo de Legumes e Verduras']
-    colunas=st.selectbox('Colunas', options=nome_colunas, key='matriz')
-    button_input = st.button('Gerar Matrizes')
-
-    col1,col2= st.columns(2)
-    with col1:
-        
-
-        confusion_matrix = pd.crosstab(dfp_c_labels['Clusters'], dfp_c_labels[colunas])
-        if button_input:
-            plt.figure(figsize=(10, 6))
-            sns.heatmap(confusion_matrix, annot=True, cmap='Blues', fmt='d')
-            plt.title(f'Matriz de Confusão(KModes): {colunas}')
-            plt.xlabel('Target')
-            plt.ylabel('Cluster')
-            st.write('Matriz 1')
-            st.pyplot(plt)
-    with col2:
-        
-        confusion_matrix = pd.crosstab(dfp_c2_labels['Clusters'], dfp_c2_labels[colunas])
-        if button_input:
-            plt.figure(figsize=(10, 6))
-            sns.heatmap(confusion_matrix, annot=True, cmap='Blues', fmt='d')
-            plt.title(f'Matriz de Confusão(KMeans): {colunas}')
-            plt.xlabel('Target')
-            plt.ylabel('Cluster')
-            st.write('Matriz 2')
-            st.pyplot(plt)
-matrix()
 def dispersao():
-    clusters = dfp_c['Clusters']
     st.subheader('Gráficos de Dispersão Apenas de Hábitos e Características dos Individuos')
-    col1,col2= st.columns([1.2,0.8])
-    cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
+    
+    
+    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4'}
+    
+    col1, col2 = st.columns(2)
+    
     with col1:
-        st.write('Gráficos de Dispersão dos Clusters com PCA(KModes)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA (KModes)')
+        
+        
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_c)
-
-        
         df_pca = pd.DataFrame(df_pca, columns=['PCA1', 'PCA2'])
-        df_pca['Clusters'] = clusters
-
-
-
+        df_pca['Clusters'] = dfp_c['Clusters'].map(lambda x: f'Grupo {x}')  
         
+       
         fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
                         title='Clusters KModes visualizados em 2D usando PCA',
-                        labels={'PCA1': 'PCA Component 1', 'PCA2': 'PCA Component 2','Clusters':'Grupos'},
-                        color_continuous_scale=cores_clusters)
-
-       
-        fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='PCA Component 1',
-                        yaxis_title='PCA Component 2')
-
-      
+                        
+                        color_discrete_map=cores_clusters)  
+        
+        fig.update_layout(xaxis_title='PCA Componente 1',
+                          yaxis_title='PCA Componente 2')
+        
         st.plotly_chart(fig)
+    
     with col2:
-        clusters2= dfp_c2['Clusters']
-        st.write('Gráficos de Dispersão dos Clusters com PCA(KMeans)')
+        st.write('Gráficos de Dispersão dos Clusters com PCA (KMeans)')
+        
+        
         pca = PCA(n_components=2)
         df_pca = pca.fit_transform(dfp_c2)
-
-       
         df_pca = pd.DataFrame(df_pca, columns=['PCA1', 'PCA2'])
-        df_pca['Clusters'] = clusters2
-
-
-
+        df_pca['Clusters'] = dfp_c2['Clusters'].map(lambda x: f'Grupo {x}')
         
+       
         fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
                         title='Clusters KMeans visualizados em 2D usando PCA',
-                        labels={'PCA1': 'PCA Component 1', 'PCA2': 'PCA Component 2','Clusters':'Grupos'},
-                        color_continuous_scale=cores_clusters)
-
+                        
+                        color_discrete_map=cores_clusters)  
         
-        fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='PCA Component 1',
-                        yaxis_title='PCA Component 2')
-
+        fig.update_layout(xaxis_title='PCA Componente 1',
+                          yaxis_title='PCA Componente 2')
         
         st.plotly_chart(fig)
+
 dispersao()
-def dispersao_all(df):
-    st.subheader('Gráficos de Dispersão com Mais Variáveis')
-    cores_clusters = ['#636EFA', '#19D3F3', '#1f77b4']
-    with st.expander('Colunas Não Utilizadas'):
-        st.write('Todas as colunas foram utlizadas exceto:[HeartDiseaseorAttack,Income_10000-14000, Income_15000-19999, Income_20000-24999,Income_25000-34999, Income_35000-49999, Income_50000-74999,Income_75000 ou mais, Income_Menos de 10000,Education_College 1-3, Education_College 4 ou mais,Education_Grades 1-8, Education_Grades 12 ou GED]')
-        
-    dfp_sem_colunas= df.drop(['HeartDiseaseorAttack','Income_$10000-$14000', 'Income_$15000-$19999', 'Income_$20000-$24999',
-       'Income_$25000-$34999', 'Income_$35000-$49999', 'Income_$50000-$74999',
-       'Income_$75000 ou mais', 'Income_Menos de $10000','Education_College 1-3', 'Education_College 4 ou mais',
-       'Education_Grades 1-8', 'Education_Grades 12 ou GED',
-       'Education_Grades 9-11','MentHlth', 'PhysHlth'],axis=1).copy()
-    
-    dfp_sem_colunas2= df.drop(['HeartDiseaseorAttack','Income_$10000-$14000', 'Income_$15000-$19999', 'Income_$20000-$24999',
-       'Income_$25000-$34999', 'Income_$35000-$49999', 'Income_$50000-$74999',
-       'Income_$75000 ou mais', 'Income_Menos de $10000','Education_College 1-3', 'Education_College 4 ou mais',
-       'Education_Grades 1-8', 'Education_Grades 12 ou GED',
-       'Education_Grades 9-11','MentHlth', 'PhysHlth'],axis=1).copy()
-    
-    dfp_kmodes=dfp_sem_colunas
-    dfp_kmeans = dfp_sem_colunas2
 
-    with open('Models\kmodes_modelo2.pkl', 'rb') as file:
-        kmodes = pickle.load(file)
-    clusters = kmodes.predict(dfp_kmodes)
-    dfp_kmodes.loc[:,'Clusters'] = clusters
-
-    
-    with open('Models\kmeans_modelo2.pkl','rb') as file:
-        kmeans = pickle.load(file)
-    clusters2= kmeans.predict(dfp_kmeans)
-    dfp_kmeans.loc[:,'Clusters'] = clusters2
-
-    col1,col2= st.columns(2)
-
-    with col1:
-        st.write('Gráficos de Dispersão dos Clusters com PCA(KModes)')
-        pca = PCA(n_components=2)
-        df_pca = pca.fit_transform(dfp_kmodes)
-
-        
-        df_pca = pd.DataFrame(df_pca, columns=['PCA1', 'PCA2'])
-        df_pca['Clusters'] = clusters
+import prince
+import pandas as pd
+import plotly.express as px
+import streamlit as st
 
 
-
-        
-        fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
-                        title='Clusters KModes visualizados em 2D usando PCA',
-                        labels={'PCA1': 'PCA Component 1', 'PCA2': 'PCA Component 2','Clusters':'Grupos'},
-                        color_continuous_scale=cores_clusters)
-
-       
-        fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='Componente Principal 1',
-                        yaxis_title='Componente Principal 2')
-
-      
-        st.plotly_chart(fig)
-    with col2:
-        st.write('Gráficos de Dispersão dos Clusters com PCA(KMeans)')
-        pca = PCA(n_components=2)
-        df_pca = pca.fit_transform(dfp_kmeans)
-
-       
-        df_pca = pd.DataFrame(df_pca, columns=['PCA1', 'PCA2'])
-        df_pca['Clusters'] = clusters2
-
-
-
-        
-        fig = px.scatter(df_pca, x='PCA1', y='PCA2', color='Clusters',
-                        title='Clusters KMeans visualizados em 2D usando PCA',
-                        labels={'PCA1': 'PCA Component 1', 'PCA2': 'PCA Component 2','Clusters':'Grupos'},
-                        color_continuous_scale=cores_clusters)
-
-        
-        fig.update_layout(title='Clusters visualizados em 2D usando PCA',
-                        xaxis_title='Componente Principal 1',
-                        yaxis_title='Componente Principal 2')
-
-        
-        st.plotly_chart(fig)
-dispersao_all(dfp)
 
 
 def mapa_calor(df1,df2):
@@ -348,10 +199,6 @@ def mapa_calor(df1,df2):
         st.pyplot(plt)
 mapa_calor(dfp_c,dfp_c2)
 
-
-# print(f"Davies-Bouldin Index(KModes): {db_score}")
-
-# print(f"Davies-Bouldin Index(KMeans): {db_score2}")
 
 
 
