@@ -5,7 +5,7 @@ import plotly.express as px
 from utils import readDataframe_csv, transformRawDf
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
-from utils import _categorizeBMI
+from utils import transformRawDf
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
 df_cleaned = removeOutliersFromDf(dfp)
@@ -85,57 +85,10 @@ def profilling():
 
                  
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
-
-# def binario_para_sim_nao(dfp):
-    # colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
-
-    # mapeamento = {0: 'Não', 1: 'Sim'}
-
-    # dfp[colunas_binarias] = dfp[colunas_binarias].map(
-    #     lambda x: mapeamento.get(x, x))
-
-    # return dfp
-    
-# def global_filter(dfp):
-#     st.sidebar.header("Filtros Globais")
-    
-#     # Filtro por Idade
-#     selected_age = st.sidebar.multiselect("Filtrar por Faixa Etária", options=dfp['Age'].unique(), default=dfp['Age'].unique())
-#     dfp = dfp[dfp['Age'].isin(selected_age)]
-    
-#     # Filtro por Sexo
-#     selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp['Sex'].unique(), default=dfp['Sex'].unique())
-#     dfp = dfp[dfp['Sex'].isin(selected_sex)]
-    
-#     # Filtro por Doença Cardíaca
-#     selected_heart = st.sidebar.multiselect("Filtrar por Doença Cardíaca", options=dfp['HeartDiseaseorAttack'].unique(), default=dfp['HeartDiseaseorAttack'].unique())
-#     dfp = dfp[dfp['HeartDiseaseorAttack'].isin(selected_heart)]
-    
-#     return dfp
-
+         
 def parallel_cateogries():
     dfp_labels= transformRawDf(dfp.copy())
     dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
-=======
-
-def global_filter(dfp):
-    dfp_labels= transformRawDf(dfp.copy())
-
-    st.sidebar.header("Filtros")
-    
-    # Filtro por Idade
-    selected_age = st.sidebar.multiselect("Filtrar idade: ", options=dfp['Age'].unique(), default=dfp['Age'].unique())
-    dfp = dfp[dfp['Age'].isin(selected_age)]
-    
-    # # Filtro por Sexo
-    # selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp_labels['Sexo'].unique(), default=dfp_labels['Sexo'].unique())
-    # dfp_labels = dfp_labels[dfp_labels['Sexo'].isin(selected_sex)]
-    return dfp
-
-def parallel_cateogries(dfp):
-    dfp_labels= transformRawDf(dfp.copy())
-
->>>>>>> Stashed changes
     st.subheader('Gráfico de Categorias Paralelas')
     colunas = st.multiselect('Colunas (máximo 3)', options=dfp_labels.columns)
     if len(colunas) > 3:
@@ -197,16 +150,92 @@ def boxplot():
     grafico = px.box(dfp, y=escolha_variavel, color='HeartDiseaseorAttack')
     st.plotly_chart(grafico, use_container_width=True)
 
+        # filtro_col1, filtro_col2 = st.columns([0.5, 0.5])
+        # with filtro_col1:
+            # filtro = st.radio("Filtrar por: ", options=['Nenhum', 'Idade', 'Sexo'])
+        # with filtro_col2:
+        #     remove_outliers = st.radio('Remover outliers: ', options=['Sim', 'Não'], index=1)
+
+        # selected_df = df_cleaned if remove_outliers == 'Sim' else dfp
+            
+        # grafico = None 
+
+        # if escolha_variavel == 'BMI':
+        #     if filtro == 'Idade':
+        #       grafico = px.box(selected_df, x='Age', y='BMI', color='HeartDiseaseorAttack', 
+        #                          title='Boxplot de IMC por idade e Doença Cardíaca', 
+        #                          color_discrete_sequence=selected_colors, 
+        #                          category_orders={'Age': sorted(selected_df['Age'].unique())})
+        #     elif filtro == 'Sexo':
+        #         grafico = px.box(selected_df, x='Sex', y='BMI', color='HeartDiseaseorAttack', 
+        #                          title='Boxplot de IMC por sexo e Doença Cardíaca', 
+        #                          color_discrete_sequence=selected_colors)
+        #     else:
+        #        grafico = px.box(selected_df, y='BMI', color='HeartDiseaseorAttack', 
+        #                          title='Boxplot de IMC por Doença Cardíaca', 
+        #                          color_discrete_sequence=selected_colors)
+               
+        # elif escolha_variavel in ['MentHlth', 'PhysHlth']:
+        #     if filtro == 'Idade': 
+        #          grafico = px.box(selected_df, x='Age', y=escolha_variavel, color='HeartDiseaseorAttack', 
+        #                          title=f'Boxplot de {escolha_variavel} por Idade e Doença Cardíaca', 
+        #                          color_discrete_sequence= selected_colors, 
+        #                          category_orders={'Age': sorted(selected_df['Age'].unique())})
+        #     elif filtro == 'Sexo':
+        #       grafico = px.box(selected_df, x='Sex', y=escolha_variavel, color='HeartDiseaseorAttack', 
+        #                          title=f'Boxplot de {escolha_variavel} por Sexo e Doença Cardíaca', 
+        #                          color_discrete_sequence=selected_colors,
+        #                          category_orders={'Sex': sorted(selected_df['Sex'].unique())})
+        #     else:
+        #         grafico = px.box(selected_df, y=escolha_variavel, color='HeartDiseaseorAttack', 
+        #                          title=f'Boxplot de {escolha_variavel} por Doença Cardíaca', 
+        #                          color_discrete_sequence=selected_colors)
+                             
+        # if grafico is not None:
+        #         st.plotly_chart(grafico, use_container_width=True)
+        # else:
+        #     st.warning('Selecione uma variável e um filtro para visualizar o gráfico.')
+
+# def idade(dfp):
+#     mapping = {
+#         1: '18-24', 2: '25-29', 3: '30-34', 4: '35-39', 5: '40-44',
+#         6: '45-49', 7: '50-54', 8: '55-59', 9: '60-64', 10: '65-69',
+#         11: '70-74', 12: '75-79', 13: '80 ou mais'
+#     }
+    
+#     dfp['Age'] = dfp['Age'].map(mapping)
+
+#     return dfp
+
+# def binario_para_sim_nao(dfp):
+#     colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
+
+#     mapeamento = {0: 'Não', 1: 'Sim'}
+
+#     dfp[colunas_binarias] = dfp[colunas_binarias].map(
+#         lambda x: mapeamento.get(x, x))
+
+#     return dfp
+
+
+# def binario_para_genero(dfp):
+
+#     mapeamento = {0: 'Feminino', 1: 'Masculino'}
+
+#     dfp['Sex'] = dfp['Sex'].map(mapeamento)
+
+#     return dfp
 
 
 def buildPage():
+    # dfp = idade(dfp)
+    # dfp = binario_para_sim_nao(dfp)
+    # dfp = binario_para_genero(dfp)
     dataDict()
     profilling()
     parallel_cateogries()
-    dfp_filtered = global_filter(dfp)
-    parallel_cateogries(dfp_filtered)
-    histograms(dfp_filtered)
-    boxplot(dfp_filtered)
+    histograms()
+    boxplot()
     
 if __name__ == '__main__':
     buildPage()
