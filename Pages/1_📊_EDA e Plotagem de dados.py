@@ -85,9 +85,37 @@ def profilling():
 
                  
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
-         
+
+# def binario_para_sim_nao(dfp):
+    # colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
+
+    # mapeamento = {0: 'Não', 1: 'Sim'}
+
+    # dfp[colunas_binarias] = dfp[colunas_binarias].map(
+    #     lambda x: mapeamento.get(x, x))
+
+    # return dfp
+    
+# def global_filter(dfp):
+#     st.sidebar.header("Filtros Globais")
+    
+#     # Filtro por Idade
+#     selected_age = st.sidebar.multiselect("Filtrar por Faixa Etária", options=dfp['Age'].unique(), default=dfp['Age'].unique())
+#     dfp = dfp[dfp['Age'].isin(selected_age)]
+    
+#     # Filtro por Sexo
+#     selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp['Sex'].unique(), default=dfp['Sex'].unique())
+#     dfp = dfp[dfp['Sex'].isin(selected_sex)]
+    
+#     # Filtro por Doença Cardíaca
+#     selected_heart = st.sidebar.multiselect("Filtrar por Doença Cardíaca", options=dfp['HeartDiseaseorAttack'].unique(), default=dfp['HeartDiseaseorAttack'].unique())
+#     dfp = dfp[dfp['HeartDiseaseorAttack'].isin(selected_heart)]
+    
+#     return dfp
+
 def parallel_cateogries():
     dfp_labels= transformRawDf(dfp.copy())
+    st.write(dfp_labels)
     dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
     st.subheader('Gráfico de Categorias Paralelas')
     colunas = st.multiselect('Colunas (máximo 3)', options=dfp_labels.columns)
@@ -234,8 +262,14 @@ def buildPage():
     dataDict()
     profilling()
     parallel_cateogries()
-    histograms()
-    boxplot()
+    # dfp_filtered = global_filter(dfp)
+    # parallel_cateogries(dfp_filtered)
+    # histograms(dfp_filtered)
+    # boxplot(dfp_filtered)
+    # histograms()
+    # boxplot()
+
+    # parallel_cateogries()
     
 if __name__ == '__main__':
     buildPage()
