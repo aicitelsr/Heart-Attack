@@ -10,6 +10,7 @@ from sklearn.metrics import classification_report
 from catboost import CatBoostClassifier
 from sklearn.linear_model import LogisticRegression
 import pickle
+import seaborn as sns
 
 # Tree Visualisation
 from sklearn.tree import export_graphviz
@@ -114,6 +115,19 @@ def __catBoost():
 
    return model, explainer, shap_values, x_shap, report_train, report_test
 
+def __regressaoLogistica():
+   with open('./Models/regressaoBalanced.pkl', 'rb') as file:
+      data = pickle.load(file)
+   
+   model = data['model']
+   explainer = data['explainer']
+   shap_values = data['shap_values']
+   x_shap = data['x_shap']
+   report_train = data['report_train']
+   report_test = data['report_test']
+
+   return model, explainer, shap_values, x_shap, report_train, report_test
+
 def _featureImportances(shap_values, x_shap):
     fig, ax = plt.subplots()
     shap.summary_plot(shap_values, x_shap, show=False, plot_size=[10,6])
@@ -135,7 +149,7 @@ def buildPage():
     classifiers = {
         'Random Forest': lambda: __randomForest(),
         'CatBoost': lambda: __catBoost(),
-        # 'Regressão Logística': lambda: _regressaoLogistica(x_train, y_train, x_test, y_test),
+        'Regressão Logística': lambda: __regressaoLogistica(),
         # 'KDD': None,
     } 
 
