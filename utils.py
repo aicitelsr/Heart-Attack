@@ -30,7 +30,7 @@ def transformData2(df: pd.DataFrame) -> pd.DataFrame:
     _transformIncomeData(df)
     _transformEducationData(df)
     _transformDiabetesData(df)
-    # _transformBMI(df)
+    _transformBMI(df)
     _transformGenHealth(df)
     dfp2=df
     return dfp2
@@ -98,7 +98,7 @@ def removeOutliersFromDf(df) -> pd.DataFrame:
     return df_cleaned
 
 def transformRawDf(df) -> pd.DataFrame:
-    problema = {0:'Sem Problemas Cardíacos', 1:'Com Problemas Cardíacos'}
+    problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
     df['HeartDiseaseorAttack'] = df['HeartDiseaseorAttack'].replace(problema)
 
     fumante = {0:'Não Fumante',1:'Fumante'}
@@ -147,7 +147,7 @@ def transformRawDf(df) -> pd.DataFrame:
     df['Diabetes'] = df['Diabetes'].replace(diabetico)
 
     df['BMI'] = df['BMI'].apply(_categorizeBMI)
-    age = {1:'18-24',2:'25-29',3:'30-34',4:'35-39',5:'40-44',6:'45-49',7:'50-54',8:'55-59',9:'60-64',10:'65-69',11:'70-74',12:'75-79', 13:'80+'}
+    age = {1:'18-24',2:'25-29',3:'30-34',4:'35-39',5:'40-44',6:'45-49',7:'50-54',8:'55-59',9:'60-64',10:'65-69',11:'70-74',12:'75-79', 13:'Mais de 80'}
     df['Age']= df['Age'].replace(age)
     df.rename(columns={
     'Smoker': 'Fumantes',
