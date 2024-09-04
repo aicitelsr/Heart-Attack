@@ -160,31 +160,29 @@ def create_classifier_dict(x_train, y_train, x_test, y_test):
     return classifiers
 
 def buildPage():
-    isBalanced = False
-    rawDf = transformData(readDataframe_parquet())
-    balancedDf = pd.read_parquet('./data/heart_disease_resampled.parquet')
-
-    df = balancedDf if isBalanced else rawDf
-
+    # Transformação dos dados
+    balancedDf = transformData(readDataframe_parquet())
+    rawDf = pd.read_parquet('./data/heart_disease.parquet')
+    
+    # Definindo os classificadores disponíveis
     classifiers = ['Random Forest', 'CatBoost', 'Regressão Logística']    
 
-    df_target = df['HeartDiseaseorAttack']
     st.title('Classificação')
-    
-    st.subheader('Escolha um modelo de Classificação:')
-    left, right = st.columns([3, 1], vertical_alignment='bottom')
 
-    with left:
-        classifier = st.selectbox(label='Escolha o modelo', options=classifiers)
-    
-    with right:
-        isBalanced = st.checkbox(label='Balancear dataset')
+    # Função para exibir resultados com base no dataset
+    def exibir_resultados(df, titulo):
+        df_target = df['HeartDiseaseorAttack']
 
-    confirmButton = st.button('Classificar')
+        st.subheader(f'Escolha um modelo de Classificação {titulo}:')
+        left, right = st.columns([3, 1], vertical_alignment='bottom')
 
-    if confirmButton:
-        #  Dropando variaveis
-        df = df.drop(['HeartDiseaseorAttack','Education_College 1-3', 'Education_College 4 ou mais', 'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 'MentHlth', 'PhysHlth'], axis=1)
+        with left:
+            classifier = st.selectbox(label=f'Escolha o modelo ({titulo})', options=classifiers, key=titulo)
+
+        # Dropando variáveis não utilizadas
+        df = df.drop(['HeartDiseaseorAttack', 'Education_College 1-3', 'Education_College 4 ou mais', 
+                      'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 
+                      'MentHlth', 'PhysHlth'], axis=1)
 
         # Divisão entre treino e teste
         x_train, x_test, y_train, y_test = train_test_split(df, df_target, test_size=0.2, random_state=42)
@@ -193,23 +191,27 @@ def buildPage():
         classifier_dict = create_classifier_dict(x_train, y_train, x_test, y_test)
         report_train, report_test, fig = classifier_dict[classifier]()
 
-        c1, _, c2, c3 = st.columns([.49, .02, .49, 0.1]) 
-    
+        c1, _, c2, _ = st.columns([.49, .02, .49, 0.1]) 
+
         with c1:
-            st.subheader('Dados de treino')
+            st.subheader(f'Dados de treino ({titulo})')
             _showReport(report_train)
-    
+
         st.write('')
 
         with c2:
-            st.subheader('Dados de teste')
+            st.subheader(f'Dados de teste ({titulo})')
             _showReport(report_test)
 
-        # Features importance
-        st.subheader('Feature importance do Modelo:')
+        # Importância das características
+        st.subheader(f'Feature importance do Modelo ({titulo}):')
         st.pyplot(fig)
 
-    # st.write(df_target.value_counts())
+    # Exibir seção para dataset balanceado
+    exibir_resultados(balancedDf, 'Balanceado')
+
+    # Exibir seção para dataset não balanceado
+    exibir_resultados(rawDf, 'Não Balanceado')
 
 if __name__ == '__main__':
     buildPage()
