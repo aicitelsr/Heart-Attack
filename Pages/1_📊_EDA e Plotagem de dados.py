@@ -91,7 +91,6 @@ def profilling():
 def global_filter(dfp):
 
     dfp_labels= transformRawDf(dfp.copy())
-    st.write(dfp_labels)
     st.sidebar.header("Filtros")
 
     # Filtro por Idade
