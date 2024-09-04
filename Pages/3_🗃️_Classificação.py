@@ -1,6 +1,6 @@
 from functools import partial
-from graphviz import Source
 import joblib
+import shap
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, recall_score, ConfusionMatrixDisplay
@@ -23,11 +23,11 @@ import matplotlib.pyplot as plt
 
 def _showReport(report):
     df_results = {
-                'classe': [],
-                'precision': [],
-                'recall': [],
-                'f1-score': [],
-                'support': [],
+                'Classe': [],
+                'Precisão': [],
+                'Recall': [],
+                'F1-score': [],
+                'Suporte': [],
             }
 
     accuracy = 0
@@ -37,45 +37,21 @@ def _showReport(report):
       if key == 'accuracy':
         accuracy = value
       else:
-        df_results['classe'].append(key)
-        df_results['precision'].append(value['precision'])
-        df_results['recall'].append(value['recall'])
-        df_results['f1-score'].append(value['f1-score'])
+        df_results['Classe'].append(key)
+        df_results['Precisão'].append(value['precision'])
+        df_results['Recall'].append(value['recall'])
+        df_results['F1-score'].append(value['f1-score'])
         support = int(value['support'])
-        df_results['support'].append(support)
+        df_results['Suporte'].append(support)
 
     df_results = pd.DataFrame(df_results)
-    df_results.style.format({'precision': '{:.2f}', 'recall': '{:.2f}', 'f1-score': '{:.2f}', 'support': '{:.0f}'})
+    df_results.style.format({'Precisão': '{:.2f}%', 'Recall': '{:.2f}%', 'F1-score': '{:.2f}%', 'Suporte': '{:.0f}%'})
     st.write(f'''
-                <b>Accuracy: {accuracy:.4%}</b><br/>
-                Support: {support:.0f}
+                <b>Acurácia: {accuracy:.2%}</b><br/>
+                Suporte: {support:.0f}
              ''', unsafe_allow_html=True)
     st.write('')
     st.dataframe(df_results)
-
-def _randomForest(x_train, y_train, x_test, y_test):
-    rf = joblib.load('./Models/random_forest_model.pkl.gz')
-
-    pred_train = rf.predict(x_train)
-    pred_test = rf.predict(x_test)
-
-    # Gerar resultados
-    report_train = classification_report(y_train, pred_train, output_dict=True)
-    report_test = classification_report(y_test, pred_test, output_dict=True)
-
-    # st.title('Feature importance do RandomForest')
-    
-    # Feature importances do RF
-    importance = rf.feature_importances_
-    feature_importances = pd.Series(importance, index=x_train.columns).sort_values(ascending=False)
-
-    # Mostrar o gráfico de importâncias
-    fig, ax = plt.subplots()
-    feature_importances.plot.barh(ax=ax)
-    ax.set_title('Importância das Características')
-    ax.set_xlabel('Importância')
-    ax.set_ylabel('Características')
-    return report_train, report_test, fig
 
 def _regressaoLogistica(x_train, y_train, x_test, y_test):
     # Carregar o modelo com pickle
@@ -112,106 +88,82 @@ def _regressaoLogistica(x_train, y_train, x_test, y_test):
         
     return report_train, report_test, fig
 
-def _catBoost(x_train, y_train, x_test, y_test):
-    cb = joblib.load('./Models/catboost_model.pkl.gz')
+def __randomForest():
+   with open('./Models/randomForestBalanced.pkl', 'rb') as file:
+      data = pickle.load(file)
+   
+   model = data['model']
+   explainer = data['explainer']
+   shap_values = data['shap_values']
+   x_shap = data['x_shap']
+   report_train = data['report_train']
+   report_test = data['report_test']
 
-    pred_train = cb.predict(x_train)
-    pred_test = cb.predict(x_test)
+   return model, explainer, shap_values, x_shap, report_train, report_test
 
-    # Avaliando o modelo
-    report_train = classification_report(y_train, pred_train, output_dict=True)
-    report_test = classification_report(y_test, pred_test, output_dict=True)
+def __catBoost():
+   with open('./Models/catBoostBalanced.pkl', 'rb') as file:
+      data = pickle.load(file)
+   
+   model = data['model']
+   explainer = data['explainer']
+   shap_values = data['shap_values']
+   x_shap = data['x_shap']
+   report_train = data['report_train']
+   report_test = data['report_test']
 
-    # Feature importances do RF
-    importance = cb.feature_importances_
-    feature_importances = pd.Series(importance, index=x_train.columns).sort_values(ascending=False)
+   return model, explainer, shap_values, x_shap, report_train, report_test
 
-    # Mostrar o gráfico de importâncias
+def _featureImportances(shap_values, x_shap):
     fig, ax = plt.subplots()
-    feature_importances.plot.barh(ax=ax)
-    ax.set_title('Importância das Características')
-    ax.set_xlabel('Importância')
-    ax.set_ylabel('Características')
-    return report_train, report_test, fig
-
-# def _plotConfusionMatrix(y_test, pred):
-#     cm = confusion_matrix(y_test, pred)
-#     ConfusionMatrixDisplay(confusion_matrix=cm)
-
-#     # Criar a visualização da matriz de confusão
-#     fig, ax = plt.subplots(figsize=(8, 6))  # Ajuste o tamanho conforme necessário
-#     disp = ConfusionMatrixDisplay(confusion_matrix=cm)
-#     disp.plot(ax=ax, cmap='viridis', values_format='d')  # Ajuste o cmap conforme desejado
-
-#     # Adicionar título e rótulos
-#     ax.set_title('Matriz de Confusão')
-#     ax.set_xlabel('Previsão')
-#     ax.set_ylabel('Real')
-
-#     # Exibir a matriz de confusão no Streamlit
-#     st.pyplot(fig)
-def create_classifier_dict(x_train, y_train, x_test, y_test):
-    classifiers = {
-        'Random Forest': partial(_randomForest, x_train, y_train, x_test, y_test),
-        'CatBoost': partial(_catBoost, x_train, y_train, x_test, y_test),
-        'Regressão Logística': partial(_regressaoLogistica, x_train, y_train, x_test, y_test)
-    }
+    shap.summary_plot(shap_values, x_shap, show=False, plot_size=[10,6])
     
-    return classifiers
+    # Ajustes nas labels
+    ax.set_xlabel('Valor de SHAP (impacto na previsão do modelo)')
+    
+    return fig
+
+def _forcePlot(explainer, shap_values, x_shap):
+    fig = shap.force_plot(explainer.expected_value, shap_values[1], x_shap.iloc[1, :], figsize=[36,6], matplotlib = True, show=False)
+    plt.xticks(rotation=45, ha="right", fontsize=8)  # Rotaciona e diminui o tamanho da fonte
+    plt.yticks(fontsize=1)  # Diminui o tamanho da fonte das labels das features
+    
+    return fig
 
 def buildPage():
-    # Transformação dos dados
-    balancedDf = transformData(readDataframe_parquet())
-    rawDf = pd.read_parquet('./data/heart_disease.parquet')
-    
-    # Definindo os classificadores disponíveis
-    classifiers = ['Random Forest', 'CatBoost', 'Regressão Logística']    
+    # # Definindo os classificadores disponíveis
+    classifiers = {
+        'Random Forest': lambda: __randomForest(),
+        'CatBoost': lambda: __catBoost(),
+        # 'Regressão Logística': lambda: _regressaoLogistica(x_train, y_train, x_test, y_test),
+        # 'KDD': None,
+    } 
 
     st.title('Classificação')
+    classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
+    
+    model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
 
-    # Função para exibir resultados com base no dataset
-    def exibir_resultados(df, titulo):
-        df_target = df['HeartDiseaseorAttack']
+    # Espaço
+    st.write('')
 
-        st.subheader(f'Escolha um modelo de Classificação {titulo}:')
-        left, right = st.columns([3, 1], vertical_alignment='bottom')
+    # Tabelas de resultados treino e teste
+    col1, col2 = st.columns(2)
+    with col1:
+        st.subheader('Treino')
+        _showReport(report_train)
+    with col2:        
+        st.subheader('Teste')
+        _showReport(report_test)
 
-        with left:
-            classifier = st.selectbox(label=f'Escolha o modelo ({titulo})', options=classifiers, key=titulo)
+    st.subheader('Plots SHAP:')
+    # Feature importances
+    with st.expander('Importância das Variáveis'):
+        st.pyplot(_featureImportances(shap_values, x_shap))
 
-        # Dropando variáveis não utilizadas
-        df = df.drop(['HeartDiseaseorAttack', 'Education_College 1-3', 'Education_College 4 ou mais', 
-                      'Education_Grades 1-8', 'Education_Grades 12 ou GED', 'Education_Grades 9-11', 
-                      'MentHlth', 'PhysHlth'], axis=1)
-
-        # Divisão entre treino e teste
-        x_train, x_test, y_train, y_test = train_test_split(df, df_target, test_size=0.2, random_state=42)
-
-        # Seleção do Classificador
-        classifier_dict = create_classifier_dict(x_train, y_train, x_test, y_test)
-        report_train, report_test, fig = classifier_dict[classifier]()
-
-        c1, _, c2, _ = st.columns([.49, .02, .49, 0.1]) 
-
-        with c1:
-            st.subheader(f'Dados de treino ({titulo})')
-            _showReport(report_train)
-
-        st.write('')
-
-        with c2:
-            st.subheader(f'Dados de teste ({titulo})')
-            _showReport(report_test)
-
-        # Importância das características
-        st.subheader(f'Feature importance do Modelo ({titulo}):')
-        st.pyplot(fig)
-
-    # Exibir seção para dataset balanceado
-    exibir_resultados(balancedDf, 'Balanceado')
-
-    # Exibir seção para dataset não balanceado
-    exibir_resultados(rawDf, 'Não Balanceado')
+    # Force Plot
+    with st.expander('Força das variáveis'):
+        st.pyplot(_forcePlot(explainer, shap_values, x_shap))
 
 if __name__ == '__main__':
     buildPage()
