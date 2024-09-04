@@ -87,7 +87,7 @@ def profilling():
                  
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
 
-def parallel_cateogries():
+def parallel_categories():
     dfp_labels= transformRawDf(dfp.copy())
     dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
     st.subheader('Gráfico de Categorias Paralelas')
@@ -231,7 +231,7 @@ def violin():
 def buildPage():
     dataDict()
     profilling()
-    parallel_cateogries()
+    parallel_categories()
     histograms()
     boxplot()
     violin()
