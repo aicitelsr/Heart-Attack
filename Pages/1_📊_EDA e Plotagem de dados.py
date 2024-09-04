@@ -5,15 +5,16 @@ import plotly.express as px
 from utils import readDataframe_csv, transformRawDf
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
-from utils import transformRawDf
+from utils import _categorizeBMI
+
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
 df_cleaned = removeOutliersFromDf(dfp)
 
 # Quando necessário trabalhar com os dados transformados: transformData(readDatafrase_csv())) ou transformData(readDatafrase_parquet()))
 st.title('Análise exploratória dos dados e Plotagens')
-custom_colors = ['#636efa', '#4e51d4', '#3936ae', '#211b8a', '#000068']
-selected_colors = [custom_colors[0], custom_colors[-2]]
+custom_colors = ['#19d3f3', '#00abea', '#0082d9', '#0055bb']
+selected_colors = [custom_colors[0], custom_colors[-1]]
 
 
 def dataDict():
@@ -86,65 +87,40 @@ def profilling():
                  
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
 
-# def binario_para_sim_nao(dfp):
-    # colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
 
-    # mapeamento = {0: 'Não', 1: 'Sim'}
+def global_filter(dfp):
 
-    # dfp[colunas_binarias] = dfp[colunas_binarias].map(
-    #     lambda x: mapeamento.get(x, x))
-
-    # return dfp
-    
-# def global_filter(dfp):
-#     st.sidebar.header("Filtros Globais")
-    
-#     # Filtro por Idade
-#     selected_age = st.sidebar.multiselect("Filtrar por Faixa Etária", options=dfp['Age'].unique(), default=dfp['Age'].unique())
-#     dfp = dfp[dfp['Age'].isin(selected_age)]
-    
-#     # Filtro por Sexo
-#     selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp['Sex'].unique(), default=dfp['Sex'].unique())
-#     dfp = dfp[dfp['Sex'].isin(selected_sex)]
-    
-#     # Filtro por Doença Cardíaca
-#     selected_heart = st.sidebar.multiselect("Filtrar por Doença Cardíaca", options=dfp['HeartDiseaseorAttack'].unique(), default=dfp['HeartDiseaseorAttack'].unique())
-#     dfp = dfp[dfp['HeartDiseaseorAttack'].isin(selected_heart)]
-    
-#     return dfp
-
-def parallel_cateogries():
     dfp_labels= transformRawDf(dfp.copy())
     st.write(dfp_labels)
-    dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
+    st.sidebar.header("Filtros")
+
+    # Filtro por Idade
+    selected_age = st.sidebar.multiselect("Filtrar por idade: ", options=dfp_labels['Idade'].unique(), default=dfp_labels['Idade'].unique())
+    dfp_labels = dfp_labels[dfp_labels['Idade'].isin(selected_age)]
+
+    # # Filtro por Sexo
+    # selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp_labels['Sexo'].unique(), default=dfp_labels['Sexo'].unique())
+    # dfp_labels = dfp_labels[dfp_labels['Sexo'].isin(selected_sex)]
+
+    return dfp
+
+def parallel_cateogries(dfp):
+    dfp_labels= transformRawDf(dfp.copy())
+
     st.subheader('Gráfico de Categorias Paralelas')
     colunas = st.multiselect('Colunas (máximo 3)', options=dfp_labels.columns)
     if len(colunas) > 3:
         st.error('Selecione no máximo 3 colunas.', icon='🚨')
-        grafico = px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Problemas cardíacos'])
-
-        grafico.update_layout(coloraxis_showscale=False, margin=dict(l=100, r=0, t=0, b=25))
-        
-        st.plotly_chart(grafico, use_container_width=True)  
     elif len(colunas) >= 2:
-        grafico = px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Cor'])
+        dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
+         
+        grafico = px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Cor'], color_continuous_scale=selected_colors)
         
         grafico.update_layout(coloraxis_showscale=False, margin=dict(l=100, r=0, t=0, b=25))
         
         st.plotly_chart(grafico, use_container_width=True)
     else:
-        st.error('Selecione no mínimo duas colunas.', icon='🚨')
-        # if len(colunas) > 3:
-        #     st.error('Selecione no máximo 3 colunas.', icon='🚨')
-        # elif len(colunas) >=2 and button_input:
-        #                 with col2:
-        #                         grafico= px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Cor'])
-
-        #                         grafico.update_layout(coloraxis_showscale=False,margin=dict(l=100, r=0, t=0, b=25))
-
-        #                         col2.plotly_chart(grafico, use_container_width=True)         
-        # elif len(colunas) < 2:
-        #     st.error('Deve haver no mínimo duas colunas', icon='🚨')   
+        st.error('Selecione no mínimo duas colunas.', icon='🚨') 
  
 def histograms(dfp_labels):
     dfp_labels= transformRawDf(dfp.copy())
@@ -153,7 +129,10 @@ def histograms(dfp_labels):
 
     coluna = st.selectbox('Colunas', options=dfp_labels.columns)
 
-    grafico = px.histogram(dfp_labels, x=coluna, color='Problemas cardíacos')
+    order = sorted(dfp_labels[coluna].unique())
+
+    grafico = px.histogram(dfp_labels, x=coluna, color='Problemas cardíacos', color_discrete_sequence=selected_colors, category_orders={coluna: order}, title=f'Histograma de {coluna}')
+    grafico.update_yaxes(title_text='Frequência')
     st.plotly_chart(grafico, use_container_width=True)
 
     # with col2:
@@ -162,115 +141,77 @@ def histograms(dfp_labels):
     #     grafico.update_layout(bargap=0.1)
     #     col2.plotly_chart(grafico, use_container_width=True)
 
-def boxplot():
-    # binario_para_sim_nao(df_cleaned)
-    # binario_para_genero(df_cleaned)
-    # idade(df_cleaned)
+def boxplot(dfp):
+    dfp_labels = transformRawDf(dfp.copy())
 
+    dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()      
     st.subheader("Gráfico de Boxplot")
-
-    # col1, col2 = st.columns([0.3, 0.7])
-
-    # with st.container():
-    variaveis = ['BMI', 'MentHlth', 'PhysHlth']   
+    variaveis = ['IMC - Índice de Massa Corporal', 'Saúde mental', 'Saúde física']   
+ 
     escolha_variavel = st.selectbox('Escolha a Variável para o Boxplot:', options=variaveis)
 
-    grafico = px.box(dfp, y=escolha_variavel, color='HeartDiseaseorAttack')
-    st.plotly_chart(grafico, use_container_width=True)
+    dfp['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].map({1.0: 'Com problemas Cardíacos', 0.0: 'Sem problemas Cardíacos'})
 
-        # filtro_col1, filtro_col2 = st.columns([0.5, 0.5])
-        # with filtro_col1:
-            # filtro = st.radio("Filtrar por: ", options=['Nenhum', 'Idade', 'Sexo'])
-        # with filtro_col2:
-        #     remove_outliers = st.radio('Remover outliers: ', options=['Sim', 'Não'], index=1)
+    color_map = {'Com problemas Cardíacos': selected_colors[0], 'Sem problemas Cardíacos': selected_colors[1]} 
 
-        # selected_df = df_cleaned if remove_outliers == 'Sim' else dfp
-            
-        # grafico = None 
+    if escolha_variavel == 'IMC - Índice de Massa Corporal':
+        dfp['Categoria IMC'] = dfp['BMI'].apply(_categorizeBMI)
 
-        # if escolha_variavel == 'BMI':
-        #     if filtro == 'Idade':
-        #       grafico = px.box(selected_df, x='Age', y='BMI', color='HeartDiseaseorAttack', 
-        #                          title='Boxplot de IMC por idade e Doença Cardíaca', 
-        #                          color_discrete_sequence=selected_colors, 
-        #                          category_orders={'Age': sorted(selected_df['Age'].unique())})
-        #     elif filtro == 'Sexo':
-        #         grafico = px.box(selected_df, x='Sex', y='BMI', color='HeartDiseaseorAttack', 
-        #                          title='Boxplot de IMC por sexo e Doença Cardíaca', 
-        #                          color_discrete_sequence=selected_colors)
-        #     else:
-        #        grafico = px.box(selected_df, y='BMI', color='HeartDiseaseorAttack', 
-        #                          title='Boxplot de IMC por Doença Cardíaca', 
-        #                          color_discrete_sequence=selected_colors)
-               
-        # elif escolha_variavel in ['MentHlth', 'PhysHlth']:
-        #     if filtro == 'Idade': 
-        #          grafico = px.box(selected_df, x='Age', y=escolha_variavel, color='HeartDiseaseorAttack', 
-        #                          title=f'Boxplot de {escolha_variavel} por Idade e Doença Cardíaca', 
-        #                          color_discrete_sequence= selected_colors, 
-        #                          category_orders={'Age': sorted(selected_df['Age'].unique())})
-        #     elif filtro == 'Sexo':
-        #       grafico = px.box(selected_df, x='Sex', y=escolha_variavel, color='HeartDiseaseorAttack', 
-        #                          title=f'Boxplot de {escolha_variavel} por Sexo e Doença Cardíaca', 
-        #                          color_discrete_sequence=selected_colors,
-        #                          category_orders={'Sex': sorted(selected_df['Sex'].unique())})
-        #     else:
-        #         grafico = px.box(selected_df, y=escolha_variavel, color='HeartDiseaseorAttack', 
-        #                          title=f'Boxplot de {escolha_variavel} por Doença Cardíaca', 
-        #                          color_discrete_sequence=selected_colors)
-                             
-        # if grafico is not None:
-        #         st.plotly_chart(grafico, use_container_width=True)
-        # else:
-        #     st.warning('Selecione uma variável e um filtro para visualizar o gráfico.')
+        ordem_categorias = [
+            'Abaixo do peso', 'Peso normal baixo', 'Peso normal', 
+            'Sobrepeso', 'Obesidade Grau I', 'Obesidade Grau II', 
+            'Obesidade Grau III'
+        ]
 
-# def idade(dfp):
-#     mapping = {
-#         1: '18-24', 2: '25-29', 3: '30-34', 4: '35-39', 5: '40-44',
-#         6: '45-49', 7: '50-54', 8: '55-59', 9: '60-64', 10: '65-69',
-#         11: '70-74', 12: '75-79', 13: '80 ou mais'
-#     }
+        variavel = 'Categoria IMC'
+        labels = {'Categoria IMC': 'Categorias de IMC', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
+
+        grafico = px.box(
+            dfp, y=variavel, color='HeartDiseaseorAttack',
+            color_discrete_map= color_map,
+            category_orders={'Categoria IMC': ordem_categorias},
+            labels=labels
+        )
+
+    elif escolha_variavel == 'Saúde mental':
+        variavel = 'MentHlth'
+        labels = {'MentHlth': 'Dias com a saúde mental ruim', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
+
+        grafico = px.box(
+            dfp, y=variavel, color='HeartDiseaseorAttack',
+            color_discrete_map=color_map,
+            labels=labels
+        )
     
-#     dfp['Age'] = dfp['Age'].map(mapping)
+    else:
+        variavel = 'PhysHlth'
+        labels = {'PhysHlth': 'Dias com a saúde física ruim', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
 
-#     return dfp
+        grafico = px.box(
+            dfp, y=variavel, color='HeartDiseaseorAttack',
+            color_discrete_map=color_map,
+            labels=labels
+        )
 
-# def binario_para_sim_nao(dfp):
-#     colunas_binarias = [col for col in df.columns if (dfp[col].eq(0) | dfp[col].eq(1)).all() and col != 'Sex']
-
-#     mapeamento = {0: 'Não', 1: 'Sim'}
-
-#     dfp[colunas_binarias] = dfp[colunas_binarias].map(
-#         lambda x: mapeamento.get(x, x))
-
-#     return dfp
+    grafico.update_layout(
+        margin=dict(l=100, r=0, t=0, b=50),
+        yaxis_title=None,
+        showlegend=True,
+        legend_title_text='Problemas Cardíacos'
+    )
 
 
-# def binario_para_genero(dfp):
-
-#     mapeamento = {0: 'Feminino', 1: 'Masculino'}
-
-#     dfp['Sex'] = dfp['Sex'].map(mapeamento)
-
-#     return dfp
+    st.plotly_chart(grafico, use_container_width=True)
 
 
 def buildPage():
-    # dfp = idade(dfp)
-    # dfp = binario_para_sim_nao(dfp)
-    # dfp = binario_para_genero(dfp)
+    dfp_filtered = global_filter(dfp)
     dataDict()
     profilling()
-    parallel_cateogries()
-    # dfp_filtered = global_filter(dfp)
-    # parallel_cateogries(dfp_filtered)
-    # histograms(dfp_filtered)
-    # boxplot(dfp_filtered)
-    # histograms()
-    # boxplot()
+    parallel_cateogries(dfp_filtered)
+    histograms(dfp_filtered)
+    boxplot(dfp_filtered)
 
-    # parallel_cateogries()
-    
 if __name__ == '__main__':
     buildPage()
 
