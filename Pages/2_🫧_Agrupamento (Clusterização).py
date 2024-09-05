@@ -9,26 +9,11 @@ import matplotlib.pyplot as plt
 
 from sklearn.decomposition import PCA
 
-st.title('Clusterização K-means e K-modes')
-with st.expander('Notas'):
-    st.write('Através do método do cotovelo e silhueta foi definido que o melhor número de clusters é 3.\nComo é possível observar há uma suavização da curva no valor de K=3, isso indica que a adição de mais clusters não terá uma melgoria significativa.')
-    col1,col2= st.columns(2)
-    with col1:
-        st.image('data\cotovelo_kmodes.png', caption='Cotovelo do KModes',use_column_width=True)
-    with col2:
-        st.image('data\cotovelo_kmeans.png', caption='Cotovelo do KMeans',use_column_width=True)
-dfp= readDataframe_parquet()
-dfp_c = pd.read_parquet('data\clusters_kmodes.parquet')
-dfp_c2= pd.read_parquet('data\clusters_kmeans.parquet')
-dfp_c= dfp_c.rename(columns={'Cluster':'Clusters'})
-dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
-dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
-
 def labels(df):
     problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
     df['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].replace(problema)
 
-    grupos= {0:'Grupo 0',1:'Grupo 1', 2:'Grupo 2'}
+    grupos= {0:'Grupo 0',1:'Grupo 1', 2:'Grupo 2',3:'Grupo 3'}
     df['Clusters']= df['Clusters'].replace(grupos)
 
     fumante = {0:'Não Fuma',1:'Fuma'}
@@ -60,22 +45,169 @@ def labels(df):
 
     legumes= {0:'Não Consomem Legumes ou Verduras', 1:'Não Consomem Legumes ou Verduras'}
     df['Veggies'] = df['Veggies'].replace(legumes)
-    df.rename(columns={
-    'Smoker': 'Fumantes',
-    'HeartDiseaseorAttack':'Problemas Cardíacos',
-    'PhysActivity': "Pratica Atividade Física",
-    'Sex': 'Sexo',
-    'GenHlth_Boa': 'Saúde Boa',
-    'GenHlth_Execelente': 'Saúde Excelente',
-    'GenHlth_Moderada': 'Saúde Moderada',
-    'GenHlth_Pobre': 'Saúde Probre',
-    'GenHlth_Ruim': 'Saúde Ruim',
-    'Fruits': 'Consumo de Frutas',
-    'Veggies': 'Consumo de Legumes e Verduras'
-    }, inplace=True)
+
+    idade1 = {0:'Não Tem Entre 18-24 Anos',1:'Tem Entre 18-24 Anos'}
+    df['Age_18-24'] = df['Age_18-24'].replace(idade1)
+
+    idade2 = {0:'Não Tem Entre 25-29 Anos',1:'Tem Entre 25-29 Anos'}
+    df['Age_25-29'] = df['Age_25-29'].replace(idade2)
+
+    idade3 = {0:'Não Tem Entre 30-34 Anos',1:'Tem Entre 30-34 Anos'}
+    df['Age_30-34'] = df['Age_30-34'].replace(idade3)
+
+    idade4 = {0:'Não Tem Entre 35-39 Anos',1:'Tem Entre 35-39 Anos'}
+    df['Age_35-39'] = df['Age_35-39'].replace(idade4)
+
+    idade5 = {0:'Não Tem Entre 40-44 Anos',1:'Tem Entre 40-44 Anos'}
+    df['Age_40-44'] = df['Age_40-44'].replace(idade5)
+
+    idade6 = {0:'Não Tem Entre 45-49 Anos',1:'Tem Entre 45-49 Anos'}
+    df['Age_45-49'] = df['Age_45-49'].replace(idade6)
+
+    idade7 = {0:'Não Tem Entre 50-54 Anos',1:'Tem Entre 50-54 Anos'}
+    df['Age_50-54'] = df['Age_50-54'].replace(idade7)
+
+    idade8 = {0:'Não Tem Entre 55-59 Anos',1:'Tem Entre 55-59 Anos'}
+    df['Age_55-59'] = df['Age_55-59'].replace(idade8)
+
+    idade9 = {0:'Não Tem Entre 60-64 Anos',1:'Tem Entre 60-64 Anos'}
+    df['Age_60-64'] = df['Age_60-64'].replace(idade9)
+    
+    idade10 = {0:'Não Tem Entre 65-69 Anos',1:'Tem Entre 65-69 Anos'}
+    df['Age_65-69'] = df['Age_65-69'].replace(idade10)
+
+    idade11 = {0:'Não Tem Entre 70-74 Anos',1:'Tem Entre 70-74 Anos'}
+    df['Age_70-74'] = df['Age_70-74'].replace(idade11)
+
+    idade12 = {0:'Não Tem Entre 75-79 Anos',1:'Tem Entre 75-79 Anos'}
+    df['Age_75-79'] = df['Age_75-79'].replace(idade12)
+
+    idade13 = {0:'Não Tem Mais de 80 Anos',1:'Tem Mais de 80 Anos'}
+    df['Age_Mais de 80'] = df['Age_Mais de 80'].replace(idade13)
+
+    df.rename(columns={'Smoker': 'Fumantes',
+        'HeartDiseaseorAttack':'Problemas Cardíacos',
+        'PhysActivity': "Pratica Atividade Física",
+        'Sex': 'Sexo',
+        'GenHlth_Boa': 'Saúde Boa',
+        'GenHlth_Execelente': 'Saúde Excelente',
+        'GenHlth_Moderada': 'Saúde Moderada',
+        'GenHlth_Pobre': 'Saúde Probre',
+        'GenHlth_Ruim': 'Saúde Ruim',
+        'Fruits': 'Consumo de Frutas',
+        'Veggies': 'Consumo de Legumes e Verduras',
+        'Age_18-24': 'Idade Entre 18-24',
+        'Age_25-29': 'Idade entre 25-29',
+        'Age_30_34': 'Idade Entre 30-34',
+        'Age_35-39': 'Idade Entre 25-29',
+        'Age_40-44': 'Idade Entre 40-44',
+        'Age_45-49': 'Idade Entre 45-49',
+        'Age_50-54': 'Idade Entre 50-54',
+        'Age_55-59': 'Idade Entre 55-59',
+        'Age_60-64': 'Idade Entre 60-64',
+        'Age_65-69': 'Idade Entre 65-69',
+        'Age_70-74': 'Idade Entre 70-74',
+        'Age_75-79': 'Idade Entre 75-79',
+        'Age_Mais de 80': 'Idade 80+'}, inplace=True)
     return df
 
-dfp_mca = dfp[['HeartDiseaseorAttack','Smoker','PhysActivity','Sex','GenHlth','Fruits','Veggies']]
+def rename_colunas(df):
+    df.rename(columns={'Smoker': 'Fumantes',
+        'HeartDiseaseorAttack':'Problemas Cardíacos',
+        'PhysActivity': "Pratica Atividade Física",
+        'Sex': 'Sexo',
+        'GenHlth_Boa': 'Saúde Boa',
+        'GenHlth_Execelente': 'Saúde Excelente',
+        'GenHlth_Moderada': 'Saúde Moderada',
+        'GenHlth_Pobre': 'Saúde Probre',
+        'GenHlth_Ruim': 'Saúde Ruim',
+        'Fruits': 'Consumo de Frutas',
+        'Veggies': 'Consumo de Legumes e Verduras',
+        'Age_18-24': 'Idade Entre 18-24',
+        'Age_25-29': 'Idade entre 25-29',
+        'Age_30-34': 'Idade Entre 30-34',
+        'Age_35-39': 'Idade Entre 25-29',
+        'Age_40-44': 'Idade Entre 40-44',
+        'Age_45-49': 'Idade Entre 45-49',
+        'Age_50-54': 'Idade Entre 50-54',
+        'Age_55-59': 'Idade Entre 55-59',
+        'Age_60-64': 'Idade Entre 60-64',
+        'Age_65-69': 'Idade Entre 65-69',
+        'Age_70-74': 'Idade Entre 70-74',
+        'Age_75-79': 'Idade Entre 75-79',
+        'Age_Mais de 80': 'Idade 80+'}, inplace=True)
+    return df
+dfp= readDataframe_parquet()
+dfp_c = pd.read_parquet('data\clusters_kmodes.parquet')
+dfp_c2= pd.read_parquet('data\clusters_kmeans.parquet')
+dfp_c= dfp_c.rename(columns={'Cluster':'Clusters'})
+dfp_c['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
+dfp_c2['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack']
+dfp_c_labels=labels(dfp_c.copy())
+dfp_c2_labels= labels(dfp_c2.copy())
+
+st.title('Clusterização K-means e K-modes')
+with st.expander('Notas'):
+    st.write('Através do método do cotovelo e silhueta foi definido que o melhor número de clusters é 4.')
+    col1,col2= st.columns(2)
+    with col1:
+        st.image('data\cotovelo_kmodes.png', caption='Cotovelo do KModes',use_column_width=True)
+        st.image('data\silhouette_score_kmodes.png', caption='Silhouette Score KModes',use_column_width=True)
+    with col2:
+        st.image('data\cotovelo_kmeans.png', caption='Cotovelo do KMeans',use_column_width=True)
+        st.image('data\silhouette_score_kmeans.png', caption='Silhouette Score KMeans',use_column_width=True)
+
+with st.expander('Analise dos Clusters (KModes)'):
+    
+    col1,col2=st.columns([0.3,0.7])
+    with col1:
+        analise_cluster_kmodes=dfp_c.copy().groupby('Clusters').mean() * 100
+        analise_cluster_kmodes = rename_colunas(analise_cluster_kmodes)
+        for cluster in analise_cluster_kmodes.index:
+            st.subheader(f"Cluster {cluster} KModes")
+
+            
+            st.dataframe(analise_cluster_kmodes.loc[cluster].reset_index().rename(columns={'index':'Característica',cluster: 'Percentual (%)', 0:'Grupo 0'}))
+
+    with col2:
+            for cluster in analise_cluster_kmodes.index: 
+                fig = px.bar(analise_cluster_kmodes.loc[cluster].reset_index(), x='index', y=cluster, 
+                            labels={'index': 'Característica', cluster: 'Percentual (%)'},
+                            title=f"Distribuição de Características no Cluster {cluster} (KModes)")
+                st.plotly_chart(fig)
+
+            
+    st.subheader("Resumo Geral dos Percentuais dos Clusters")
+    analise_cluster_kmodes_transposed = analise_cluster_kmodes.T
+    analise_cluster_kmodes_transposed.columns = [f'Grupo {i}' for i in range(len(analise_cluster_kmodes_transposed.columns))]
+    st.table(analise_cluster_kmodes_transposed)
+
+with st.expander('Analise dos Clusters (KMeans)'):
+    
+    col1,col2=st.columns([0.3,0.7])
+    with col1:
+        analise_cluster_kmeans=dfp_c2.copy().groupby('Clusters').mean() * 100
+        analise_cluster_kmeans = rename_colunas(analise_cluster_kmeans)
+        for cluster in analise_cluster_kmeans.index:
+            st.subheader(f"Cluster {cluster} KMeans")
+
+            
+            st.dataframe(analise_cluster_kmeans.loc[cluster].reset_index().rename(columns={'index':'Característica',cluster: 'Percentual (%)'}))
+
+    with col2:
+            for cluster in analise_cluster_kmeans.index: 
+                fig = px.bar(analise_cluster_kmeans.loc[cluster].reset_index(), x='index', y=cluster, 
+                            labels={'index': 'Característica', cluster: 'Percentual (%)'},
+                            title=f"Distribuição de Características no Cluster {cluster} (KMeans)")
+                st.plotly_chart(fig)
+
+            
+    st.subheader("Resumo Geral dos Percentuais dos Clusters")
+    analise_cluster_kmeans_transposed = analise_cluster_kmodes.T
+    analise_cluster_kmeans_transposed.columns = [f'Grupo {i}' for i in range(len(analise_cluster_kmeans_transposed.columns))]
+    st.table(analise_cluster_kmeans_transposed)
+
+
 dfp_c_labels=labels(dfp_c.copy())
 dfp_c2_labels= labels(dfp_c2.copy())
 
@@ -85,7 +217,9 @@ def grafico1():
     
     nome_colunas = ['Problemas Cardíacos', 'Fumantes', "Pratica Atividade Física", 'Sexo', 'Saúde Boa',
                     'Saúde Excelente', 'Saúde Moderada', 'Saúde Probre', 'Saúde Ruim',
-                    'Consumo de Frutas', 'Consumo de Legumes e Verduras']
+                    'Consumo de Frutas', 'Consumo de Legumes e Verduras','Idade Entre 18-24','Idade entre 25-29','Idade Entre 30-34',
+                    'Idade Entre 35-39','Idade Entre 40-44','Idade Entre 45-49','Idade Entre 50-54','Idade Entre 55-59','Idade Entre 60-64',
+                    'Idade Entre 65-69','Idade Entre 70-74','Idade Entre 75-79','Idade 80+']
 
    
     colunas = st.selectbox('Colunas', options=nome_colunas, key='histograma')
@@ -94,7 +228,7 @@ def grafico1():
     col1, col2 = st.columns(2)
     
     
-    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4'}
+    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4','Grupo 3':'#00FA9A'}
     
    
     button_input = st.button('Gerar Gráfico')
@@ -114,8 +248,6 @@ def grafico1():
 
         with col2:
             st.subheader('Histograma 2 KMeans')
-            order = dfp_c2_labels[colunas].value_counts().index.tolist()
-            
             fig = px.histogram(dfp_c2_labels, x=colunas, color='Clusters', 
                                title=f'Distribuição de {colunas} por Cluster (KMeans)',
                                color_discrete_map=cores_clusters,
@@ -131,7 +263,7 @@ def dispersao():
     st.subheader('Gráficos de Dispersão Apenas de Hábitos e Características dos Individuos')
     
     
-    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4'}
+    cores_clusters = {'Grupo 0': '#636EFA', 'Grupo 1': '#19D3F3', 'Grupo 2': '#1f77b4', 'Grupo 3':'#00FA9A'}
     
     col1, col2 = st.columns(2)
     
