@@ -1,4 +1,5 @@
 from functools import partial
+from tkinter import _test
 import joblib
 import shap
 from sklearn.model_selection import train_test_split
@@ -7,7 +8,7 @@ from sklearn.metrics import accuracy_score, confusion_matrix, precision_score, r
 from sklearn.model_selection import RandomizedSearchCV, train_test_split
 from scipy.stats import randint
 from sklearn.metrics import classification_report
-from catboost import CatBoostClassifier
+from catboost import CatBoostClassifier, train
 from sklearn.linear_model import LogisticRegression
 import pickle
 import seaborn as sns
@@ -53,6 +54,24 @@ def _showReport(report):
              ''', unsafe_allow_html=True)
     st.write('')
     st.dataframe(df_results)
+
+def __KNN(X_balanceado, y_balanceado, X_teste_normalizado, y_teste):
+        with open('Models/knn_model_balanced.pkl', 'rb') as f:
+            knn = pickle.load(f)
+
+        pred_train = knn.predict(X_balanceado) #TREINO
+        pred_test = knn.predict(X_teste_normalizado) #TESTE
+
+        report_train = classification_report(y_balanceado, pred_train, output_dict=True) #TREINO REPORT
+        report_test = classification_report(y_teste, pred_test, output_dict=True) #TESTE REPORT
+
+        st.write("Relatório - Treino")
+        _showReport(report_train)  # Mostrar o relatório de treino
+    
+        st.write("Relatório - Teste")
+        _showReport(report_test)  # Mostrar o rel
+            
+        return report_train, report_test
 
 def _regressaoLogistica(x_train, y_train, x_test, y_test):
     # Carregar o modelo com pickle
@@ -150,7 +169,7 @@ def buildPage():
         'Random Forest': lambda: __randomForest(),
         'CatBoost': lambda: __catBoost(),
         'Regressão Logística': lambda: __regressaoLogistica(),
-        # 'KDD': None,
+        'KNN':lambda: __KNN(X_balanceado, y_balanceado, X_teste_normalizado, y_teste)
     } 
 
     classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
