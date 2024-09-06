@@ -53,25 +53,26 @@ def _showReport(report):
                 Suporte: {support:.0f}
              ''', unsafe_allow_html=True)
     st.write('')
-    st.dataframe(df_results)
-
-def __KNN(X_balanceado, y_balanceado, X_teste_normalizado, y_teste):
-        with open('Models/knn_model_balanced.pkl', 'rb') as f:
-            knn = pickle.load(f)
-
-        pred_train = knn.predict(X_balanceado) #TREINO
-        pred_test = knn.predict(X_teste_normalizado) #TESTE
-
-        report_train = classification_report(y_balanceado, pred_train, output_dict=True) #TREINO REPORT
-        report_test = classification_report(y_teste, pred_test, output_dict=True) #TESTE REPORT
-
-        st.write("Relatório - Treino")
-        _showReport(report_train)  # Mostrar o relatório de treino
     
-        st.write("Relatório - Teste")
-        _showReport(report_test)  # Mostrar o rel
+    st.dataframe(df_results, width=1200, height=180)  
+    # st.dataframe(df_results)
+
+# KNN model
+
+def __KNN():
+    try:
+        with open('Models/knn_model_balanced2.pkl', 'rb') as file:
+            knn = pickle.load(file)
+
+        model = knn['model']
+        report_train = knn['report_train']
+        report_test = knn['report_test']
             
-        return report_train, report_test
+        return model, report_train, report_test
+    
+    except Exception as e:
+        st.error(f"Ocorreu um erro com o KNN: {str(e)}")
+        return None, None, None, None, None, None
 
 def _regressaoLogistica(x_train, y_train, x_test, y_test):
     # Carregar o modelo com pickle
@@ -169,12 +170,21 @@ def buildPage():
         'Random Forest': lambda: __randomForest(),
         'CatBoost': lambda: __catBoost(),
         'Regressão Logística': lambda: __regressaoLogistica(),
-        'KNN':lambda: __KNN(X_balanceado, y_balanceado, X_teste_normalizado, y_teste)
+        'KNN':lambda: __KNN()
     } 
 
     classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
+
+    if classifier == 'KNN':
+        model, report_train, report_test = classifiers[classifier]()
+        shap_values, x_shap, explainer = None, None, None
+    else:
+        model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
+
+    # classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
     
-    model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
+    # model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
+
 
     # Espaço
     st.write('')
