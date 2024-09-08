@@ -175,3 +175,132 @@ def transformRawDf(df) -> pd.DataFrame:
     }, inplace=True)
     
     return df
+
+def labels(df):
+    problema = {0:'Sem Problemas Cardíacos',1:'Com Problemas Cardíacos'}
+    df['HeartDiseaseorAttack'] = df['HeartDiseaseorAttack'].replace(problema)
+
+    grupos= {0:'Grupo 0',1:'Grupo 1', 2:'Grupo 2',3:'Grupo 3'}
+    df['Clusters']= df['Clusters'].replace(grupos)
+
+    fumante = {0:'Não Fuma',1:'Fuma'}
+    df['Smoker'] = df['Smoker'].replace(fumante)
+    
+    atividade_f={0:'Não Pratica Ativades Físicas',1:'Pratica Atividades Físicas'}
+    df['PhysActivity'] = df['PhysActivity'].replace(atividade_f)
+
+    sexo = {0:'Mulher',1:'Homem'}
+    df['Sex'] = df['Sex'].replace(sexo)
+
+    saude1= {0:'Não Tem uma Boa Saúde',1:'Tem uma boa Saúde'}
+    df['GenHlth_Boa']=df['GenHlth_Boa'].replace(saude1)
+
+    saude2= {0:'Não Tem uma Saúde Moderada',1:'Tem uma Saúde Moderada'}
+    df['GenHlth_Moderada'] =df['GenHlth_Moderada'].replace(saude2)
+
+    saude3= {0:'Não Tem uma Saúde Execelente',1:'Tem uma Saúde Execelente'}
+    df['GenHlth_Execelente'] =df['GenHlth_Execelente'].replace(saude3)
+
+    saude4= {0:'Não Tem Saúde Ruim',1:'Tem uma Saúde Ruim'}
+    df['GenHlth_Ruim'] = df['GenHlth_Ruim'].replace(saude4)
+
+    saude5= {0:'Não Tem uma Saúde Podre',1:'Tem uma Saúde Podre'}
+    df['GenHlth_Pobre'] = df['GenHlth_Pobre'].replace(saude5)
+
+    frutas = {0:'Não Cosomem Frutas',1:'Consomem Frutas'}
+    df['Fruits'] = df['Fruits'].replace(frutas)
+
+    legumes= {0:'Não Consomem Legumes ou Verduras', 1:'Não Consomem Legumes ou Verduras'}
+    df['Veggies'] = df['Veggies'].replace(legumes)
+
+    idade1 = {0:'Não Tem Entre 18-24 Anos',1:'Tem Entre 18-24 Anos'}
+    df['Age_18-24'] = df['Age_18-24'].replace(idade1)
+
+    idade2 = {0:'Não Tem Entre 25-29 Anos',1:'Tem Entre 25-29 Anos'}
+    df['Age_25-29'] = df['Age_25-29'].replace(idade2)
+
+    idade3 = {0:'Não Tem Entre 30-34 Anos',1:'Tem Entre 30-34 Anos'}
+    df['Age_30-34'] = df['Age_30-34'].replace(idade3)
+
+    idade4 = {0:'Não Tem Entre 35-39 Anos',1:'Tem Entre 35-39 Anos'}
+    df['Age_35-39'] = df['Age_35-39'].replace(idade4)
+
+    idade5 = {0:'Não Tem Entre 40-44 Anos',1:'Tem Entre 40-44 Anos'}
+    df['Age_40-44'] = df['Age_40-44'].replace(idade5)
+
+    idade6 = {0:'Não Tem Entre 45-49 Anos',1:'Tem Entre 45-49 Anos'}
+    df['Age_45-49'] = df['Age_45-49'].replace(idade6)
+
+    idade7 = {0:'Não Tem Entre 50-54 Anos',1:'Tem Entre 50-54 Anos'}
+    df['Age_50-54'] = df['Age_50-54'].replace(idade7)
+
+    idade8 = {0:'Não Tem Entre 55-59 Anos',1:'Tem Entre 55-59 Anos'}
+    df['Age_55-59'] = df['Age_55-59'].replace(idade8)
+
+    idade9 = {0:'Não Tem Entre 60-64 Anos',1:'Tem Entre 60-64 Anos'}
+    df['Age_60-64'] = df['Age_60-64'].replace(idade9)
+    
+    idade10 = {0:'Não Tem Entre 65-69 Anos',1:'Tem Entre 65-69 Anos'}
+    df['Age_65-69'] = df['Age_65-69'].replace(idade10)
+
+    idade11 = {0:'Não Tem Entre 70-74 Anos',1:'Tem Entre 70-74 Anos'}
+    df['Age_70-74'] = df['Age_70-74'].replace(idade11)
+
+    idade12 = {0:'Não Tem Entre 75-79 Anos',1:'Tem Entre 75-79 Anos'}
+    df['Age_75-79'] = df['Age_75-79'].replace(idade12)
+
+    idade13 = {0:'Não Tem Mais de 80 Anos',1:'Tem Mais de 80 Anos'}
+    df['Age_Mais de 80'] = df['Age_Mais de 80'].replace(idade13)
+
+    df.rename(columns={'Smoker': 'Fumantes',
+        'HeartDiseaseorAttack':'Problemas Cardíacos',
+        'PhysActivity': "Pratica Atividade Física",
+        'Sex': 'Sexo',
+        'GenHlth_Boa': 'Saúde Boa',
+        'GenHlth_Execelente': 'Saúde Excelente',
+        'GenHlth_Moderada': 'Saúde Moderada',
+        'GenHlth_Pobre': 'Saúde Pobre',
+        'GenHlth_Ruim': 'Saúde Ruim',
+        'Fruits': 'Consumo de Frutas',
+        'Veggies': 'Consumo de Legumes e Verduras',
+        'Age_18-24': 'Idade Entre 18-24',
+        'Age_25-29': 'Idade entre 25-29',
+        'Age_30_34': 'Idade Entre 30-34',
+        'Age_35-39': 'Idade Entre 25-29',
+        'Age_40-44': 'Idade Entre 40-44',
+        'Age_45-49': 'Idade Entre 45-49',
+        'Age_50-54': 'Idade Entre 50-54',
+        'Age_55-59': 'Idade Entre 55-59',
+        'Age_60-64': 'Idade Entre 60-64',
+        'Age_65-69': 'Idade Entre 65-69',
+        'Age_70-74': 'Idade Entre 70-74',
+        'Age_75-79': 'Idade Entre 75-79',
+        'Age_Mais de 80': 'Idade 80+'}, inplace=True)
+    return df
+
+def rename_colunas(df):
+    df.rename(columns={'Smoker': 'Fumantes',
+        'HeartDiseaseorAttack':'Problemas Cardíacos',
+        'PhysActivity': "Pratica Atividade Física",
+        'Sex': 'Sexo',
+        'GenHlth_Boa': 'Saúde Boa',
+        'GenHlth_Execelente': 'Saúde Excelente',
+        'GenHlth_Moderada': 'Saúde Moderada',
+        'GenHlth_Pobre': 'Saúde Pobre',
+        'GenHlth_Ruim': 'Saúde Ruim',
+        'Fruits': 'Consumo de Frutas',
+        'Veggies': 'Consumo de Legumes e Verduras',
+        'Age_18-24': 'Idade Entre 18-24',
+        'Age_25-29': 'Idade entre 25-29',
+        'Age_30-34': 'Idade Entre 30-34',
+        'Age_35-39': 'Idade Entre 25-29',
+        'Age_40-44': 'Idade Entre 40-44',
+        'Age_45-49': 'Idade Entre 45-49',
+        'Age_50-54': 'Idade Entre 50-54',
+        'Age_55-59': 'Idade Entre 55-59',
+        'Age_60-64': 'Idade Entre 60-64',
+        'Age_65-69': 'Idade Entre 65-69',
+        'Age_70-74': 'Idade Entre 70-74',
+        'Age_75-79': 'Idade Entre 75-79',
+        'Age_Mais de 80': 'Idade 80+'}, inplace=True)
+    return df
