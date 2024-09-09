@@ -74,41 +74,6 @@ def __KNN():
         st.error(f"Ocorreu um erro com o KNN: {str(e)}")
         return None, None, None, None, None, None
 
-def _regressaoLogistica(x_train, y_train, x_test, y_test):
-    # Carregar o modelo com pickle
-    with open('Models/regressao2_model.pkl', 'rb') as f:
-        logistica = pickle.load(f)
-
-    pred_train = logistica.predict(x_train)
-    pred_test = logistica.predict(x_test)
-
-    # Gerar resultados
-    report_train = classification_report(y_train, pred_train, output_dict=True)
-    report_test = classification_report(y_test, pred_test, output_dict=True)
-
-    coef = logistica.coef_[0]  # Coeficientes do modelo
-    feature_importances = pd.Series(coef, index=x_train.columns).sort_values(ascending=False)
-
-    fig, ax = plt.subplots()
-    feature_importances.plot.barh(ax=ax)
-    fig, ax = plt.subplots(figsize=(10, 8))  # Aumenta o tamanho da figura
-
-    # Plota a importância das características
-    feature_importances.plot.barh(ax=ax)
-
-    # Título e rótulos
-    ax.set_title('Importância das Características', fontsize=16)
-    ax.set_xlabel('Coeficiente', fontsize=14)
-    ax.set_ylabel('Características', fontsize=14)
-
-    # Rotaciona as labels do eixo Y para 0 graus (padrão) e ajusta o tamanho da fonte
-    ax.tick_params(axis='y', labelsize=12)
-
-    # Ajusta o layout para que as labels não fiquem cortadas
-    plt.tight_layout()
-        
-    return report_train, report_test, fig
-
 def __randomForest():
    with open('./Models/randomForestBalanced.pkl', 'rb') as file:
       data = pickle.load(file)
@@ -157,15 +122,18 @@ def _featureImportances(shap_values, x_shap):
     
     return fig
 
-def _forcePlot(explainer, shap_values, x_shap):
-    fig = shap.force_plot(explainer.expected_value, shap_values[1], x_shap.iloc[1, :], figsize=[36,6], matplotlib = True, show=False)
+def _decisionPlot(explainer, shap_values, x_shap):
+    fig,ax = plt.subplots()
+    shap.decision_plot(explainer.expected_value, shap_values, x_shap.columns, show=False, ignore_warnings=True)
     plt.xticks(rotation=45, ha="right", fontsize=8)  # Rotaciona e diminui o tamanho da fonte
-    plt.yticks(fontsize=1)  # Diminui o tamanho da fonte das labels das features
+    plt.yticks(fontsize=8)  # Diminui o tamanho da fonte das labels das features
     
+    ax.set_xlabel('Saída do valor do modelo')
+
     return fig
 
 def buildPage():
-    # # Definindo os classificadores disponíveis
+    # Definindo os classificadores disponíveis
     classifiers = {
         'Random Forest': lambda: __randomForest(),
         'CatBoost': lambda: __catBoost(),
@@ -185,7 +153,6 @@ def buildPage():
     
     # model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
 
-
     # Espaço
     st.write('')
 
@@ -204,8 +171,8 @@ def buildPage():
         st.pyplot(_featureImportances(shap_values, x_shap))
 
     # Force Plot
-    with st.expander('Força das variáveis'):
-        st.pyplot(_forcePlot(explainer, shap_values, x_shap))
+    with st.expander('Gráfico de decisão - SHAP'):
+        st.pyplot(_decisionPlot(explainer, shap_values, x_shap))
 
 if __name__ == '__main__':
     buildPage()
