@@ -137,6 +137,7 @@ def rename_colunas(df):
         'Age_75-79': 'Idade Entre 75-79',
         'Age_Mais de 80': 'Idade 80+'}, inplace=True)
     return df
+
 dfp= readDataframe_parquet()
 dfp_c = pd.read_parquet('data\clusters_kmodes.parquet')
 dfp_c2= pd.read_parquet('data\clusters_kmeans.parquet')

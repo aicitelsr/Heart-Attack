@@ -5,7 +5,6 @@ import plotly.express as px
 from utils import readDataframe_csv, transformRawDf
 from utils import readDataframe_parquet
 from utils import removeOutliersFromDf
-from utils import _categorizeBMI
 
 df = readDataframe_csv()
 dfp = readDataframe_parquet()
@@ -87,33 +86,56 @@ def profilling():
                  
          st.components.v1.html(pagina_html, height = 700, scrolling=True)
 
-
-def global_filter(dfp):
-
+def global_filter(dfp, grafico):
     dfp_labels= transformRawDf(dfp.copy())
+   
+    dfp = dfp.rename(columns={'Sex': 'Sexo', 'Age': 'Idade'})
+
     st.sidebar.header("Filtros")
 
-    # Filtro por Idade
-    selected_age = st.sidebar.multiselect("Filtrar por idade: ", options=dfp_labels['Idade'].unique(), default=dfp_labels['Idade'].unique())
-    dfp_labels = dfp_labels[dfp_labels['Idade'].isin(selected_age)]
+    age_mapping = {1: '18-24', 2: '25-29', 3: '30-34', 4: '35-39', 5: '40-44',
+                   6: '45-49', 7: '50-54', 8: '55-59', 9: '60-64', 10: '65-69',
+                   11: '70-74', 12: '75-79', 13: '80+'}
 
-    # # Filtro por Sexo
-    # selected_sex = st.sidebar.multiselect("Filtrar por Sexo", options=dfp_labels['Sexo'].unique(), default=dfp_labels['Sexo'].unique())
-    # dfp_labels = dfp_labels[dfp_labels['Sexo'].isin(selected_sex)]
+    age_values = list(age_mapping.keys())
+    age_labels = [age_mapping[i] for i in age_values]
 
-    return dfp
+    idade_min, idade_max = st.sidebar.select_slider("Idade:",  options=age_values,
+        value=(1, 13),
+        format_func=lambda x: age_mapping[x])
+    
+    sexo_mapping = {0: 'Feminino', 1: 'Masculino'}
+    sexo_reverse_mapping = {v: k for k, v in sexo_mapping.items()}
 
-def parallel_cateogries(dfp):
-    dfp_labels= transformRawDf(dfp.copy())
+    selected_sex_labels = st.sidebar.multiselect("Sexo: ", options=list(sexo_mapping.values()), default=list(sexo_mapping.values()))
+    selected_sex = [sexo_reverse_mapping[label] for label in selected_sex_labels]
 
+    age_range = [age_mapping[i] for i in range(idade_min, idade_max + 1)]
+    dfp_labels = dfp_labels[dfp_labels['Idade'].isin(age_range)]
+    dfp_labels = dfp_labels[dfp_labels['Sexo'].isin(selected_sex_labels)]
+
+    dfp = dfp[(dfp['Idade'] >= idade_min) & (dfp['Idade'] <= idade_max)]
+    dfp = dfp[dfp['Sexo'].isin(selected_sex)]
+
+    return dfp_labels, dfp
+
+def parallel_cateogries(df):
+    # dfp_labels= transformRawDf(dfp.copy())
+    dfp_labels = df
     st.subheader('Gráfico de Categorias Paralelas')
     colunas = st.multiselect('Colunas (máximo 3)', options=dfp_labels.columns)
     if len(colunas) > 3:
         st.error('Selecione no máximo 3 colunas.', icon='🚨')
     elif len(colunas) >= 2:
-        dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()
-         
-        grafico = px.parallel_categories(dfp_labels[colunas], color=dfp_labels['Cor'], color_continuous_scale=selected_colors)
+
+        dfp_labels['Problemas cardíacos'] = dfp['HeartDiseaseorAttack'].copy()
+        
+        grafico = px.parallel_categories(
+            dfp_labels, 
+            dimensions=colunas,  
+            color='Problemas cardíacos', 
+            color_continuous_scale=custom_colors
+        )
         
         grafico.update_layout(coloraxis_showscale=False, margin=dict(l=100, r=0, t=0, b=25))
         
@@ -121,9 +143,9 @@ def parallel_cateogries(dfp):
     else:
         st.error('Selecione no mínimo duas colunas.', icon='🚨') 
  
-def histograms(dfp_labels):
-    dfp_labels= transformRawDf(dfp.copy())
-
+def histograms(df):
+    # dfp_labels= transformRawDf(dfp.copy())
+    dfp_labels = df
     st.subheader('Histograma')
 
     coluna = st.selectbox('Colunas', options=dfp_labels.columns)
@@ -134,27 +156,23 @@ def histograms(dfp_labels):
     grafico.update_yaxes(title_text='Frequência')
     st.plotly_chart(grafico, use_container_width=True)
 
-    # with col2:
-    #     order = dfp_labels[colunas].value_counts().index.tolist()
-    #     grafico= px.histogram(dfp_labels, x=colunas, color='Problemas cardíacos', color_discrete_sequence=selected_colors, category_orders={colunas:order})
-    #     grafico.update_layout(bargap=0.1)
-    #     col2.plotly_chart(grafico, use_container_width=True)
+def boxplot(df):
+    df = df
 
-def boxplot(dfp):
-    dfp_labels = transformRawDf(dfp.copy())
-
-    dfp_labels['Cor'] = dfp['HeartDiseaseorAttack'].copy()      
+    df.rename(columns={'HeartDiseaseorAttack': 'Problemas cardíacos'}, inplace=True)
+    # dfp['Problemas cardíacos'] = dfp['HeartDiseaseorAttack'].copy()      
     st.subheader("Gráfico de Boxplot")
     variaveis = ['IMC - Índice de Massa Corporal', 'Saúde mental', 'Saúde física']   
  
     escolha_variavel = st.selectbox('Escolha a Variável para o Boxplot:', options=variaveis)
 
-    dfp['HeartDiseaseorAttack'] = dfp['HeartDiseaseorAttack'].map({1.0: 'Com problemas Cardíacos', 0.0: 'Sem problemas Cardíacos'})
+    df['Problemas cardíacos'] = df['Problemas cardíacos'].map({1.0: 'Com Problemas Cardíacos', 0.0: 'Sem Problemas Cardíacos'})
 
-    color_map = {'Com problemas Cardíacos': selected_colors[0], 'Sem problemas Cardíacos': selected_colors[1]} 
+    color_map = {'Com Problemas Cardíacos': selected_colors[0], 'Sem Problemas Cardíacos': selected_colors[1]} 
+
+    labels = {}  
 
     if escolha_variavel == 'IMC - Índice de Massa Corporal':
-        dfp['Categoria IMC'] = dfp['BMI'].apply(_categorizeBMI)
 
         ordem_categorias = [
             'Abaixo do peso', 'Peso normal baixo', 'Peso normal', 
@@ -162,39 +180,38 @@ def boxplot(dfp):
             'Obesidade Grau III'
         ]
 
-        variavel = 'Categoria IMC'
-        labels = {'Categoria IMC': 'Categorias de IMC', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
-
+        variavel = 'BMI'
+        labels = {'BMI': 'Valores de IMC', 'Problemas cardíacos': 'Problemas Cardíacos'}
         grafico = px.box(
-            dfp, y=variavel, color='HeartDiseaseorAttack',
+            df, y=variavel, color='Problemas cardíacos',
             color_discrete_map= color_map,
-            category_orders={'Categoria IMC': ordem_categorias},
+            category_orders={'BMI': ordem_categorias},
             labels=labels
         )
 
     elif escolha_variavel == 'Saúde mental':
         variavel = 'MentHlth'
-        labels = {'MentHlth': 'Dias com a saúde mental ruim', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
+        labels = {'MentHlth': 'Dias com a saúde mental ruim', 'Problemas cardíacos': 'Problemas Cardíacos'}
 
         grafico = px.box(
-            dfp, y=variavel, color='HeartDiseaseorAttack',
+            df, y=variavel, color='Problemas cardíacos',
             color_discrete_map=color_map,
             labels=labels
         )
     
     else:
         variavel = 'PhysHlth'
-        labels = {'PhysHlth': 'Dias com a saúde física ruim', 'HeartDiseaseorAttack': 'Problemas Cardíacos'}
+        labels = {'PhysHlth': 'Dias com a saúde física ruim', 'Problemas cardíacos': 'Problemas Cardíacos'}
 
         grafico = px.box(
-            dfp, y=variavel, color='HeartDiseaseorAttack',
+            df, y=variavel, color='Problemas cardíacos',
             color_discrete_map=color_map,
             labels=labels
         )
 
     grafico.update_layout(
         margin=dict(l=100, r=0, t=0, b=50),
-        yaxis_title=None,
+         yaxis_title=labels.get(variavel, None), 
         showlegend=True,
         legend_title_text='Problemas Cardíacos'
     )
@@ -204,12 +221,14 @@ def boxplot(dfp):
 
 
 def buildPage():
-    dfp_filtered = global_filter(dfp)
     dataDict()
     profilling()
-    parallel_cateogries(dfp_filtered)
-    histograms(dfp_filtered)
-    boxplot(dfp_filtered)
+    filtered_data = global_filter(dfp, 'Boxplot')
+    filter_1, filter2 = filtered_data
+    parallel_cateogries(filter_1)
+    histograms(filter_1)
+    boxplot(filter2)
+
 
 if __name__ == '__main__':
     buildPage()
