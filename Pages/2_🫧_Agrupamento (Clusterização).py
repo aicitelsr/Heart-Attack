@@ -215,8 +215,10 @@ dispersao()
 
 def mapa_calor(df1,df2):
     st.subheader('Mapas de Calor (HeatMaps)')
+    df1=rename_colunas(df1)
+    df2=rename_colunas(df2)
     col1,col2= st.columns(2)
-    df_cluster_corr = df1.corr()
+    df_cluster_corr = (df1.corr())
     df_cluster_corr2 = df2.corr()
     
     with col1:
