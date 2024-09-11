@@ -31,54 +31,85 @@ with st.expander('Notas'):
         st.image('data\silhouette_score_kmeans.png', caption='Silhouette Score KMeans',use_column_width=True)
 
 with st.expander('Analise dos Clusters (KModes)'):
-    
-    col1,col2=st.columns([0.3,0.7])
+    col1, col2 = st.columns([0.3, 0.7])
+
     with col1:
-        analise_cluster_kmodes=dfp_c.copy().groupby('Clusters').mean() * 100
+        analise_cluster_kmodes = dfp_c.copy().groupby('Clusters').mean() * 100
         analise_cluster_kmodes = rename_colunas(analise_cluster_kmodes)
+
         for cluster in analise_cluster_kmodes.index:
             st.subheader(f"Cluster {cluster} KModes")
-
+            formatted_df = analise_cluster_kmodes.loc[cluster].reset_index().rename(
+                columns={'index': 'Característica', cluster: 'Percentual (%)'}
+            )
+            formatted_df['Percentual (%)'] = formatted_df['Percentual (%)'].map(lambda x: f'{x:.2f}%')
             
-            st.dataframe(analise_cluster_kmodes.loc[cluster].reset_index().rename(columns={'index':'Característica',cluster: 'Percentual (%)', 0:'Grupo 0'}))
+            st.dataframe(formatted_df)
 
     with col2:
-            for cluster in analise_cluster_kmodes.index: 
-                fig = px.bar(analise_cluster_kmodes.loc[cluster].reset_index(), x='index', y=cluster, 
-                            labels={'index': 'Característica', cluster: 'Percentual (%)'},
-                            title=f"Distribuição de Características no Cluster {cluster} (KModes)")
-                st.plotly_chart(fig)
+        for cluster in analise_cluster_kmodes.index:
+            sorted_df = analise_cluster_kmodes.loc[cluster].reset_index().sort_values(by=cluster, ascending=False)
+            fig = px.bar(
+                sorted_df,
+                x=cluster,  
+                y='index',  
+                labels={'index': 'Característica',
+                    '0': f'Porcentagem do Grupo {cluster}','1': f'Porcentagem do Grupo {cluster}','2': f'Porcentagem do Grupo {cluster}',
+                    '3': f'Porcentagem do Grupo {cluster}'},
+                title=f"Distribuição de Características no Cluster {cluster} (KModes)",
+                orientation='h'  
+            )
+            st.plotly_chart(fig)
 
-            
     st.subheader("Resumo Geral dos Percentuais dos Clusters")
     analise_cluster_kmodes_transposed = analise_cluster_kmodes.T
     analise_cluster_kmodes_transposed.columns = [f'Grupo {i}' for i in range(len(analise_cluster_kmodes_transposed.columns))]
-    st.table(analise_cluster_kmodes_transposed)
+    formatted_kmodes_transposed = analise_cluster_kmodes_transposed.applymap(lambda x: f'{x:.2f}%')
+    st.table(formatted_kmodes_transposed)
+
+
 
 with st.expander('Analise dos Clusters (KMeans)'):
-    
-    col1,col2=st.columns([0.3,0.7])
+    col1, col2 = st.columns([0.3, 0.7])
+
     with col1:
-        analise_cluster_kmeans=dfp_c2.copy().groupby('Clusters').mean() * 100
+        analise_cluster_kmeans = dfp_c2.copy().groupby('Clusters').mean() * 100
         analise_cluster_kmeans = rename_colunas(analise_cluster_kmeans)
+
         for cluster in analise_cluster_kmeans.index:
             st.subheader(f"Cluster {cluster} KMeans")
-
+            formatted_df = analise_cluster_kmeans.loc[cluster].reset_index().rename(
+                columns={'index': 'Característica', cluster: 'Percentual (%)'}
+            )
+            formatted_df['Percentual (%)'] = formatted_df['Percentual (%)'].map(lambda x: f'{x:.2f}%')
             
-            st.dataframe(analise_cluster_kmeans.loc[cluster].reset_index().rename(columns={'index':'Característica',cluster: 'Percentual (%)'}))
+            st.dataframe(formatted_df)
 
     with col2:
-            for cluster in analise_cluster_kmeans.index: 
-                fig = px.bar(analise_cluster_kmeans.loc[cluster].reset_index(), x='index', y=cluster, 
-                            labels={'index': 'Característica', cluster: 'Percentual (%)'},
-                            title=f"Distribuição de Características no Cluster {cluster} (KMeans)")
-                st.plotly_chart(fig)
+        for cluster in analise_cluster_kmeans.index:
+            sorted_df = analise_cluster_kmeans.loc[cluster].reset_index().sort_values(by=cluster, ascending=False)
+            fig = px.bar(
+                sorted_df,
+                x=cluster,  
+                y='index',  
+                labels={
+                    'index': 'Característica',
+                    '0': f'Porcentagem do Grupo {cluster}','1': f'Porcentagem do Grupo {cluster}','2': f'Porcentagem do Grupo {cluster}',
+                    '3': f'Porcentagem do Grupo {cluster}'
+                },
+                title=f"Distribuição de Características no Cluster {cluster} (KMeans)",
+                orientation='h'  
+            )
+            st.plotly_chart(fig)
 
-            
     st.subheader("Resumo Geral dos Percentuais dos Clusters")
-    analise_cluster_kmeans_transposed = analise_cluster_kmodes.T
+    analise_cluster_kmeans_transposed = analise_cluster_kmeans.T
     analise_cluster_kmeans_transposed.columns = [f'Grupo {i}' for i in range(len(analise_cluster_kmeans_transposed.columns))]
-    st.table(analise_cluster_kmeans_transposed)
+    formatted_kmeans_transposed = analise_cluster_kmeans_transposed.applymap(lambda x: f'{x:.2f}%')
+    st.table(formatted_kmeans_transposed)
+
+
+
 
 
 dfp_c_labels=labels(dfp_c.copy())
