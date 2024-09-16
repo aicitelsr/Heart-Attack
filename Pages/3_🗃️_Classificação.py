@@ -13,6 +13,7 @@ from sklearn.linear_model import LogisticRegression
 import pickle
 import seaborn as sns
 
+
 # Tree Visualisation
 from sklearn.tree import export_graphviz
 from IPython.display import Image
@@ -113,6 +114,19 @@ def __regressaoLogistica():
 
    return model, explainer, shap_values, x_shap, report_train, report_test
 
+def __KNN():
+   with open('./Models/KNN_Balanced.pkl', 'rb') as file:
+      data = pickle.load(file)
+   
+   model = data['model']
+   explainer = data['explainer']
+   shap_values = data['shap_values']
+   x_shap = data['x_shap']
+   report_train = data['report_train']
+   report_test = data['report_test']
+
+   return model, explainer, shap_values, x_shap, report_train, report_test
+
 def _featureImportances(shap_values, x_shap):
     fig, ax = plt.subplots()
     shap.summary_plot(shap_values, x_shap, show=False, plot_size=[10,6])
@@ -143,11 +157,7 @@ def buildPage():
 
     classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
 
-    if classifier == 'KNN':
-        model, report_train, report_test = classifiers[classifier]()
-        shap_values, x_shap, explainer = None, None, None
-    else:
-        model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
+    model, explainer, shap_values, x_shap, report_train, report_test = classifiers[classifier]()
 
     # classifier = st.selectbox('Selecione um modelo de classificação', placeholder="Escolha um modelo...",  options=classifiers)
     
