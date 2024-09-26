@@ -8,4 +8,4 @@ with st.expander('Matriz de Confusão - CatBoost'):
 with st.expander('Matriz de Confusão - Regressão Logística'):
     st.image('./data/matriz_confusao_regressao.png', caption='Matriz de Confusão - Regressão Logística', use_column_width=True)
 with st.expander('Matriz de Confusão - KNN'):
-    st.image('./data/matriz_confusao_catboost.png', caption='Matriz de Confusão - KNN', use_column_width=True)
+    st.image('./data/matriz_confusao_knn.png', caption='Matriz de Confusão - KNN', use_column_width=True)
