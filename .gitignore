@@ -1,1 +1,9 @@
+<<<<<<< HEAD
 __pycache__/utils.cpython-311.pyc
+=======
+__pycache__/
+*.pyc
+
+Models/
+
+>>>>>>> 59b3c41a58dccb86c8429c101b0ca8e5423f1a7c
